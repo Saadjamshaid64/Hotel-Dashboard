@@ -1,20 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function Dashboard() {
   return (
     <div className="ml-64 p-6">

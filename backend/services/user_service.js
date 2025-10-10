@@ -1,18 +1,4 @@
-
-
-
-
-
-
-
-
-
-
-
-
 // // import {pool} from '../database/supabaseClient.js'
-
-
 
 // // table check
 // const tableCheck = async ()=>{
@@ -65,9 +51,9 @@
 //     INSERT INTO users(firstname, lastname, email ,role, password)
 //     VALUES ($1, $2, $3, $4, $5)
 //     RETURNING *`;
-    
+
 //     const values = [firstname,lastname, email, role, password]
-    
+
 //     const {rows} = await pool.query(query, values)
 //     return rows[0]
 // } catch (error) {
@@ -75,7 +61,6 @@
 //     throw new Error(error.message)
 // }
 // }
-
 
 // //Update User
 // export const updateUser = async (id, userdata)=>{
@@ -94,7 +79,6 @@
 
 //     const result = await pool.query(query, values)
 //     return result.rows
-    
 
 // } catch (error) {
 //     console.log(error)
@@ -102,9 +86,8 @@
 // }
 // }
 
-
 // // Delete User
-// export const deleteuser = async(id)=>{  
+// export const deleteuser = async(id)=>{
 //     await tableCheck()
 //     try {
 //         const query = `
@@ -119,7 +102,6 @@
 //     }
 // }
 
-
 // // Fetch User
 // export const fetchUser = async()=>{
 //     await tableCheck()
@@ -129,65 +111,67 @@
 //     return rows
 // }
 
-import {user as User} from "../models/userModels.js"
+import { user as User } from "../models/userModels.js";
+import { Role } from "../models/roleModels.js";
 
 // create user
-export const createUser = async (data)=>{
-    try {
-        const newUser = await User.create(data)
-        console.log("✅ User created successfully:",newUser.toJSON())
-        return newUser
-    } catch (error) {
-        console.log("Error: ",error)
-        console.log("added user",[]);
-        throw error
-    }
-}
-
+export const createUser = async (data) => {
+  try {
+    const newUser = await User.create(data);
+    console.log("✅ User created successfully:", newUser.toJSON());
+    return newUser;
+  } catch (error) {
+    console.log("Error: ", error);
+    console.log("added user", []);
+    throw error;
+  }
+};
 
 // update user
-export const updateUser = async (id, newdata)=>{
-    try {
-        const user = await User.findByPk(id)
-        if(!user)
-        {
-            console.log("User not found");
-            return null;
-        }
-
-        const editUser = await user.update(newdata)
-        console.log("✅ User updated successfully.", editUser.toJSON())
-        return editUser
-    } catch (error) {
-        console.log("uError: ",error)
-        throw error
+export const updateUser = async (id, newdata) => {
+  try {
+    const user = await User.findByPk(id);
+    if (!user) {
+      console.log("User not found");
+      return null;
     }
-}
 
-
+    const editUser = await user.update(newdata);
+    console.log("✅ User updated successfully.", editUser.toJSON());
+    return editUser;
+  } catch (error) {
+    console.log("uError: ", error);
+    throw error;
+  }
+};
 
 // delete user
-export const deleteUser  = async (id)=>{
-    try {
-        const deletedUser = await User.destroy({where: {id}})
-        if (deletedUser === 0) console.log("⚠️ User not found")
-        else console.log(console.log("✅ User deleted successfully"))
-        return deletedUser
-    } catch (error) {
-        console.log("Error: ", error)
-    }
-}
-
+export const deleteUser = async (id) => {
+  try {
+    const deletedUser = await User.destroy({ where: { id } });
+    if (deletedUser === 0) console.log("⚠️ User not found");
+    else console.log(console.log("✅ User deleted successfully"));
+    return deletedUser;
+  } catch (error) {
+    console.log("Error: ", error);
+  }
+};
 
 // READ (fetch users)
-export const fetchUser = async ()=>{
-    try {
-        const showUser = await User.findAll()
-        // return showUser
-        console.log("user fetched successfully from backend")
-        return showUser.map(u => u.toJSON());   // convert Sequelize objects to plain JSON
-    } catch (error) {
-        console.log("Error: ",error.message)
-        return [];
-    }
-}
+export const fetchUser = async () => {
+  try {
+    const showUser = await User.findAll({
+      include: [
+        {
+          model: Role,
+          attributes: ["id", "rolename"],
+        },
+      ],
+    });
+    console.log("user fetched successfully from backend");
+    return showUser;
+  } catch (error) {
+    console.log("Error: ", error.message);
+    return [];
+  }
+};

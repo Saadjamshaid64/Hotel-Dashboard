@@ -1,13 +1,3 @@
-
-
-
-
-
-
-
-
-
-
 import {
   Plus,
   Stethoscope,
@@ -299,7 +289,7 @@ const togglePreferred = (e, state) => {
   };
 
   return (
-    <div className="">
+    <>
       {/* ✅ Single parent wrapper */}
 
       {/* Title + Add User button */}
@@ -1456,7 +1446,7 @@ const togglePreferred = (e, state) => {
           </Dialog.Panel>
         </div>
       </Dialog>
-    </div> // ✅ Closing parent wrapper
+    </> // ✅ Closing parent wrapper
   );
 }
 

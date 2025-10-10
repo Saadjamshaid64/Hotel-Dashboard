@@ -1,26 +1,33 @@
 import { Dialog } from "@headlessui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import ProviderManager from "../components/providers/ProviderManager.jsx"; // import component
 import { useUsers } from "../Customhooks/useUsers.js";
+import Roles from "../components/Roles/Roles.jsx";
+import roleRoles from "../Customhooks/roleRoles.js";
 
 function Users() {
   const { users, addUsers, setUsers, editUser, removeUser } = useUsers();
+  const { roles, fetchRoles } = roleRoles();
 
   const [activeTab, setActiveTab] = useState("management");
   const [isOpen, setIsOpen] = useState(false); // Add User modal
   const [editOpen, setEditOpen] = useState(false); // Edit User modal
-  const [errors, setErrors] = useState([]);
-  const [submittedData, setSubmittedData] = useState([]);
+  const [errors, setErrors] = useState([]); // check validation
+  const [loading, setloading] = useState(false);
+  const [editIndex, setEditIndex] = useState(null); // Track which user is being edited (index track)
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
     email: "",
-    role: "",
+    roleId: "",
     password: "",
   });
-  const [editIndex, setEditIndex] = useState(null); // Track which user is being edited
 
+  // fetch when whenever roles change
+  useEffect(() => {
+    fetchRoles();
+  }, [roles]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -34,30 +41,46 @@ function Users() {
     if (!formData.firstname) newErrors.push("First name is required!");
     if (!formData.lastname) newErrors.push("Last name is required!");
     if (!formData.email) newErrors.push("Email is required!");
-    if (!formData.role) newErrors.push("Role is required!");
+    if (!formData.roleId) newErrors.push("Role is required!");
     if (!formData.password) newErrors.push("Password is required!");
     setErrors(newErrors);
     if (newErrors.length > 0) return;
 
     try {
+      setloading(true);
       const result = await addUsers(formData);
+
+      await new Promise((resolve)=>setTimeout(resolve, 2000));
+      
       if (result?.data) {
         console.log("User added:", result.data);
-        // setSubmittedData((prev) => [...prev, formData]);
         // setUsers((prev) => [...prev, result.data])
-        setFormData({
-          firstname: "",
-          lastname: "",
-          email: "",
-          role: "",
-          password: "",
-        });
+        // setFormData({
+        //   firstname: "",
+        //   lastname: "",
+        //   email: "",
+        //   roleId: "",
+        //   password: "",
+        // });
+        resetForm();
         setIsOpen(false);
       }
     } catch (error) {
       console.error("Error creating user:", error);
       setErrors([error.message || "Failed to create user"]);
     }
+    setloading(false);
+  };
+
+  // reset form
+  const resetForm = () => {
+    setFormData({
+      firstname: "",
+      lastname: "",
+      email: "",
+      roleId: "",
+      password: "",
+    });
   };
 
   // delete functionality
@@ -88,11 +111,6 @@ function Users() {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-
-    // setSubmittedData((prev) => prev.map((user, idx) => (idx === editIndex ? formData : user)));
-    // setFormData({ firstname: "", lastname: "", email: "", role: "", password: "" });
-    // setEditOpen(false);
-
     try {
       const userId = users[editIndex].id; // get user id from state
       const result = await editUser(userId, formData); // call API to update
@@ -104,7 +122,7 @@ function Users() {
           firstname: "",
           lastname: "",
           email: "",
-          role: "",
+          roleId: "",
           password: "",
         });
         setEditOpen(false); // close modal
@@ -115,16 +133,16 @@ function Users() {
     }
   };
 
-  const handleAddUserClick = () => {
-    setFormData({
-      firstname: "",
-      lastname: "",
-      email: "",
-      role: "",
-      password: "",
-    }); // reset form
-    setIsOpen(true); // open add user modal
-  };
+  // const handleAddUserClick = () => {
+  //   setFormData({
+  //     firstname: "",
+  //     lastname: "",
+  //     email: "",
+  //     role: "",
+  //     password: "",
+  //   }); // reset form
+  //   setIsOpen(true); // open add user modal
+  // };
 
   return (
     <div className="ml-64 p-6 text-left">
@@ -146,6 +164,16 @@ function Users() {
           User Management
         </button>
         <button
+          onClick={() => setActiveTab("roles")}
+          className={`px-4 py-2 text-sm rounded-md transition cursor-pointer ${
+            activeTab === "roles"
+              ? "bg-white text-700 font-semibold shadow-sm"
+              : "text-gray-600 font-normal"
+          }`}
+        >
+          Roles
+        </button>
+        <button
           onClick={() => setActiveTab("provider")}
           className={`px-4 py-2 text-sm rounded-md transition cursor-pointer ${
             activeTab === "provider"
@@ -164,7 +192,9 @@ function Users() {
           <div className="flex items-center justify-between mt-8">
             <h3 className="text-md font-semibold">System Users</h3>
             <button
-              onClick={handleAddUserClick}
+              onClick={() => {
+                setIsOpen(true);
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer"
             >
               <Plus size={16} />
@@ -218,7 +248,7 @@ function Users() {
                         name="lastname"
                         placeholder="Enter last name"
                         className="mt-1 block w-full text-sm rounded-sm border border-gray-300 shadow-sm p-2"
-                        value={formData.lastName}
+                        value={formData.lastname}
                         onChange={handleChange}
                       />
                     </div>
@@ -241,19 +271,17 @@ function Users() {
                       Role *
                     </label>
                     <select
-                      name="role"
-                      value={formData.role}
+                      name="roleId"
+                      value={formData.roleId}
                       onChange={handleChange}
                       className="mt-1 block w-full text-sm rounded-sm border border-gray-300 shadow-sm p-2"
                     >
                       <option value="">Select user role</option>
-                      <option>Admin</option>
-                      <option>Consultation Specialist</option>
-                      <option>Executive</option>
-                      <option>Lead</option>
-                      <option>Medical Technician</option>
-                      <option>Patient</option>
-                      <option>Provider</option>
+                      {roles?.map((role) => (
+                        <option key={role.id} value={role.id}>
+                          {role?.rolename || "No Role"}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -274,17 +302,53 @@ function Users() {
                   <div className="flex justify-end space-x-3 mt-5 text-sm font-medium">
                     <button
                       type="button"
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => {
+                        setIsOpen(false);
+                        resetForm();
+                      }}
                       className="w-80 px-4 py-2 rounded-md border border-gray-300 text-gray-700 cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="w-80 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white cursor-pointer"
+                      className={`w-80 flex items-center justify-center gap-2 px-4 py-2 rounded-md ${
+                        loading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-blue-600 text-white"
+                      }`}
+                      disabled={loading}
                     >
-                      <Plus size={16} />
-                      Create User
+                      {loading ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            ></path>
+                          </svg>
+                          Creating User...
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={16} />
+                          Create User
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>
@@ -349,19 +413,17 @@ function Users() {
                       Role *
                     </label>
                     <select
-                      name="role"
-                      value={formData.role}
+                      name="roleId"
+                      value={formData.roleId}
                       onChange={handleChange}
                       className="mt-1 block w-full text-sm rounded-sm border border-gray-300 shadow-sm p-2"
                     >
                       <option value="">Select user role</option>
-                      <option>Admin</option>
-                      <option>Consultation Specialist</option>
-                      <option>Executive</option>
-                      <option>Lead</option>
-                      <option>Medical Technician</option>
-                      <option>Patient</option>
-                      <option>Provider</option>
+                      {roles?.map((role) => (
+                        <option key={role.id} value={role.id}>
+                          {role.rolename || "No Role"}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div></div>
@@ -494,7 +556,7 @@ function Users() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="ml-7 px-3 py-1 text-xs rounded-full border border-gray-300">
-                          {user.role}
+                          {user.Role?.rolename}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -506,6 +568,8 @@ function Users() {
                         {user.lastLogin ||
                           new Date().toLocaleDateString("en-GB")}
                       </td>
+
+                      {/* buttons */}
                       <td className="px- py-4">
                         <div className="flex items-center gap-2">
                           <button className="text-sm text-gray-700 border border-gray-300 px-3 py-1 rounded-md hover:bg-blue-100 hover:text-blue-600 hover:border-blue-600 cursor-pointer">
@@ -540,6 +604,7 @@ function Users() {
         </div>
       )}
       {activeTab === "provider" && <ProviderManager />}
+      {activeTab === "roles" && <Roles />}
     </div>
   );
 }

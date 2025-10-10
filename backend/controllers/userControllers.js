@@ -1,24 +1,11 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import {createUser, deleteUser, fetchUser, updateUser} from "../services/user_service.js"
 
 
 // create User
 export const createUserController = async (req, res) => {
     try {
+        //  const { firstname, lastname, email, password, roleId } = req.body;
+        // const newUser = await createUser(req.body)
         const newUser = await createUser(req.body)
         res.status(201).json({
             success: true,
@@ -51,7 +38,7 @@ export const updateUserController = async (req,res)=>{
         const updateduser = await updateUser(id, req.body)
         if(!updateduser )
         {
-            createUser.status(404).json({
+            res.status(404).json({
                 success: false,
                 message: "User not found",
             })

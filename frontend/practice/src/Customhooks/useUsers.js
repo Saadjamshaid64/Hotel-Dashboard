@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import {getUsers, createUsers, updateUser, deleteUser} from '../lib/Configration.js'
+import {getUsers, createUsers, updateUser, deleteUser} from '../lib/userConfigration.js'
 
 export function useUsers(){
 
@@ -9,9 +9,6 @@ useEffect(()=>{
     fetchUsers();
 },[])
 
-// useEffect(()=>{
-//     console.log("current users array:",users);
-// },[users])
 
 // fetch user
 const fetchUsers = async ()=>{

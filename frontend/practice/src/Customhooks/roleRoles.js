@@ -12,7 +12,7 @@ export default function roleRoles(){
         try {
             const result = await getRoles()
             console.log('User fetched successfully in custom hook', result);
-            setroles(result?.data?.data)
+            setroles(result?.data?.data || [])
         } catch (error) {
             console.log('error', error);
             throw error
@@ -27,6 +27,7 @@ export default function roleRoles(){
             {
                 console.log('User created successfully in custom hook');
                 fetchRoles()
+                // setroles(prev => [...prev, result.data.data])
             }
         } catch (error) {
             console.log("error", error)

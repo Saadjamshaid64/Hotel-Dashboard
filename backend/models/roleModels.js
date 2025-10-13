@@ -6,6 +6,12 @@ dotenv.config({ path: '../.env' });
 export const Role = sequelize.define(
   "Role",
   {
+    id:{
+      type: DataTypes.UUID,
+      allowNull: false,
+      defaultValue: DataTypes.UUIDV4, // auto-generate UUID v4
+      primaryKey: true
+    },
     rolename: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -29,7 +35,7 @@ export const Role = sequelize.define(
 //         rolename: 'admin',
 //         // roletemplate: 'custom no template',
 //     })
-//     console.log("✅ Dummy data inserted successfully.")
+//     console.log("✅ role Dummy data inserted successfully.")
 // } catch (error) {
 //     console.log('❌ Error syncing database:', error)
 // }

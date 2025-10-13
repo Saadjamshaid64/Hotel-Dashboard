@@ -14,7 +14,8 @@ function Users() {
   const [isOpen, setIsOpen] = useState(false); // Add User modal
   const [editOpen, setEditOpen] = useState(false); // Edit User modal
   const [errors, setErrors] = useState([]); // check validation
-  const [loading, setloading] = useState(false);
+  const [loading, setloading] = useState(false); // for spinning in local state
+  const [tabloading, settablaoding] = useState(false); // for spinning in provider tab
   const [editIndex, setEditIndex] = useState(null); // Track which user is being edited (index track)
   const [formData, setFormData] = useState({
     firstname: "",
@@ -25,9 +26,9 @@ function Users() {
   });
 
   // fetch when whenever roles change
-  useEffect(() => {
-    fetchRoles();
-  }, [roles]);
+  // useEffect(() => {
+  //   fetchRoles();
+  // }, [roles]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -50,8 +51,8 @@ function Users() {
       setloading(true);
       const result = await addUsers(formData);
 
-      await new Promise((resolve)=>setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
       if (result?.data) {
         console.log("User added:", result.data);
         // setUsers((prev) => [...prev, result.data])
@@ -88,12 +89,15 @@ function Users() {
     try {
       const result = await removeUser(id);
       if (result?.data) {
+        setloading(true);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         setUsers((prev) => prev.filter((user) => user.id !== id));
         console.log("user deleted successfully");
       }
     } catch (error) {
       console.log("Error occur", error);
     }
+    setloading(false);
   };
 
   // edit functionality
@@ -118,6 +122,9 @@ function Users() {
       if (result) {
         // update frontend state
         // setUsers((prev) => prev.map((user, idx) => (idx === editIndex ? result.data : user)));
+        setloading(true);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
         setFormData({
           firstname: "",
           lastname: "",
@@ -131,6 +138,7 @@ function Users() {
       console.log("Error updating user:", error);
       setErrors([error.message || "Failed to update user"]);
     }
+    setloading(false);
   };
 
   // const handleAddUserClick = () => {
@@ -174,7 +182,13 @@ function Users() {
           Roles
         </button>
         <button
-          onClick={() => setActiveTab("provider")}
+          onClick={() => {
+            setActiveTab("provider");
+            settablaoding(true);
+            setTimeout(() => {
+              settablaoding(false);
+            }, 3000);
+          }}
           className={`px-4 py-2 text-sm rounded-md transition cursor-pointer ${
             activeTab === "provider"
               ? "bg-white text-700 font-semibold shadow-sm"
@@ -312,9 +326,9 @@ function Users() {
                     </button>
                     <button
                       type="submit"
-                      className={`w-80 flex items-center justify-center gap-2 px-4 py-2 rounded-md ${
+                      className={`w-80 flex items-center justify-center gap-2 px-4 py-2 rounded-md cursor-pointer ${
                         loading
-                          ? "bg-gray-400 cursor-not-allowed"
+                          ? "bg-blue-400 text-white"
                           : "bg-blue-600 text-white"
                       }`}
                       disabled={loading}
@@ -439,9 +453,43 @@ function Users() {
                     </button>
                     <button
                       type="submit"
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer"
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer
+                        ${
+                          loading
+                            ? "bg-blue-400 text-white"
+                            : "bg-blue-600 text-white"
+                        }`}
+                      disabled={loading}
                     >
-                      Update User
+                      {loading ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            ></path>
+                          </svg>
+                          Updating User...
+                        </>
+                      ) : (
+                        <>
+                          Update User
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>
@@ -451,69 +499,6 @@ function Users() {
 
           {/* Users Table */}
           <div className="mt-6 overflow-x-auto">
-            {/* <table className="w-full bg-white border border-gray-200 rounded-lg">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">User</th>
-                <th className="px-15 py-3 text-left text-sm font-medium text-gray-600">Role</th>
-                <th className="px-15 py-3 text-left text-sm font-medium text-gray-600">Status</th>
-                <th className="px-15 py-3 text-left text-sm font-medium text-gray-600">Last Login</th>
-                <th className="px-15 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {submittedData.length > 0 ? (
-                submittedData.map((user, index) => (
-                  <tr key={index} className="border-t">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium text-xs">
-                          {user.firstname[0]}{user.lastname[0]}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-800 text-sm">{user.firstName} {user.lastName}</p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="ml-7 px-3 py-1 text-xs rounded-full border border-gray-300">{user.role}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="ml-9 px-3 py-1 text-xs rounded-full bg-blue-500 text-white">Active</span>
-                    </td>
-                    <td className="px-14 py-4 text-sm text-gray-600">{user.lastLogin || new Date().toLocaleDateString("en-GB")}</td>
-                    <td className="px- py-4">
-                      <div className="flex items-center gap-2">
-                        <button className="text-sm text-gray-700 border border-gray-300 px-3 py-1 rounded-md hover:bg-blue-100 hover:text-blue-600 hover:border-blue-600 cursor-pointer">
-                          change password
-                        </button>
-                        <button
-                          onClick={() => handleEditClick(index)}
-                          className="p-1 rounded border hover:bg-gray-200 hover:cursor-pointer"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          className="p-1 rounded border hover:bg-red-200 hover:cursor-pointer"
-                          onClick={() => handleDelete(index)}
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="text-center py-4 text-gray-500">
-                    Nothing to show
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table> */}
-
             <table className="w-full bg-white border border-gray-200 rounded-lg">
               <thead className="bg-gray-50">
                 <tr>
@@ -572,9 +557,9 @@ function Users() {
                       {/* buttons */}
                       <td className="px- py-4">
                         <div className="flex items-center gap-2">
-                          <button className="text-sm text-gray-700 border border-gray-300 px-3 py-1 rounded-md hover:bg-blue-100 hover:text-blue-600 hover:border-blue-600 cursor-pointer">
+                          {/* <button className="text-sm text-gray-700 border border-gray-300 px-3 py-1 rounded-md hover:bg-blue-100 hover:text-blue-600 hover:border-blue-600 cursor-pointer">
                             change password
-                          </button>
+                          </button> */}
                           <button
                             onClick={() => handleEditClick(user, index)}
                             className="p-1 rounded border hover:bg-gray-200 hover:cursor-pointer"
@@ -582,8 +567,13 @@ function Users() {
                             ✏️
                           </button>
                           <button
-                            className="p-1 rounded border hover:bg-red-200 hover:cursor-pointer"
                             onClick={() => handleDelete(user.id)}
+                            disabled={loading}
+                            className={`p-1 rounded border cursor-pointer ${
+                              loading
+                                ? "bg-gray-300 cursor-not-allowed"
+                                : "hover:bg-red-100"
+                            }`}
                           >
                             🗑️
                           </button>
@@ -603,8 +593,19 @@ function Users() {
           </div>
         </div>
       )}
-      {activeTab === "provider" && <ProviderManager />}
-      {activeTab === "roles" && <Roles />}
+      {activeTab === "provider" &&
+        (tabloading ? (
+          <div className="flex items-center justify-center h-64 gap-2">
+            {/* spinner */}
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="text-gray-700 font-medium">
+              Loading Providers...
+            </span>
+          </div>
+        ) : (
+          <ProviderManager />
+        ))}
+      {activeTab === "roles" && <Roles users={users} />}
     </div>
   );
 }

@@ -17,6 +17,7 @@ function Roles() {
   const [isopen, setopen] = useState(false);
   const [errors, setErrors] = useState([]);
   const [editopen, seteditopen] = useState(false);
+  const [loading, setloading] = useState(false);
   const [editIndex, seteditIndex] = useState(null);
   const [formData, setFormData] = useState({
     rolename: "",
@@ -39,6 +40,10 @@ function Roles() {
 
     try {
       const result = await addRoles(formData);
+      setloading(true);
+
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
       if (result?.data) console.log("User added:", result.data);
       setFormData({ rolename: "", roletemplate: "" });
       setopen(false);
@@ -46,6 +51,7 @@ function Roles() {
       console.error("Error creating user:", error);
       setErrors([error.message || "Failed to create user"]);
     }
+    setloading(false);
   };
 
   // reset form when click cancel
@@ -59,9 +65,9 @@ function Roles() {
   // edit functionality
   const handleEditClick = (user, index) => {
     try {
-      seteditIndex(index)
-      setFormData(user)
-      seteditopen(true)
+      seteditIndex(index);
+      setFormData(user);
+      seteditopen(true);
     } catch (error) {
       console.log("Error occur", error);
       setErrors([error.message || "Failed to update user"]);
@@ -74,6 +80,9 @@ function Roles() {
       const userId = roles[editIndex].id;
       const result = await editRoles(userId, formData);
       if (result) {
+        setloading(true);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
         setFormData({
           rolename: "",
           roletemplate: "",
@@ -84,6 +93,7 @@ function Roles() {
       console.log("Error updating user:", error);
       setErrors([error.message || "Failed to update user"]);
     }
+    setloading(false);
   };
 
   // delete functionality
@@ -99,19 +109,35 @@ function Roles() {
     }
   };
 
-  // show role with description
-
   // status check for capitalize
-  const statusCheck = (role = "") => {
-    switch (role.toLowerCase()) {
+  const statusCheck = (role) => {
+    switch (role) {
       case "admin":
       case "patient":
       case "doctor":
       case "nurse":
-        return "System" ;
+        return "System";
       default:
         return "Custom";
     }
+  };
+
+  // capital role name
+  const capitalRoleName = (rolename)=>{
+    switch(rolename){
+      case "admin":
+        return "Admin";
+      case "patient":
+        return "Patient";
+      default:
+        return "Custom";
+    }
+  }
+
+  // calculate user per role
+  const userPerrole = (roleId) => {
+    if (!users) return 0;
+    return users.filter((user) => user.roleId === roleId).length;
   };
 
   return (
@@ -265,9 +291,41 @@ function Roles() {
                 </button>
                 <button
                   type="submit"
-                  className="mt-4 text-sm text-white border border-gray-300 px-4 py-2 rounded-md mr-2 cursor-pointer bg-blue-500"
+                  className={`flex items-center justify-end gap-2 mt-4 text-sm text-white border border-gray-300 px-4 py-2 rounded-md mr-2 cursor-pointer bg-blue-500
+                    ${
+                      loading
+                        ? "bg-blue-400 text-white"
+                        : "bg-blue-600 text-white"
+                    }`}
+                  disabled={loading}
                 >
-                  Create Role
+                  {loading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        ></path>
+                      </svg>
+                      Creating Role...
+                    </>
+                  ) : (
+                    <>Create Role</>
+                  )}
                 </button>
               </div>
             </form>
@@ -336,9 +394,41 @@ function Roles() {
                 </button>
                 <button
                   type="submit"
-                  className="mt-4 text-sm text-white border border-gray-300 px-4 py-2 rounded-md mr-2 cursor-pointer bg-blue-500"
+                  className={`flex items-center justify-center gap-2 mt-4 text-sm text-white border border-gray-300 px-4 py-2 rounded-md mr-2 cursor-pointer bg-blue-500
+                    ${
+                      loading
+                        ? "bg-blue-400 text-white"
+                        : "bg-blue-600 text-white"
+                    }`}
+                  disabled={loading}
                 >
-                  Save Changes
+                  {loading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        ></path>
+                      </svg>
+                      Saving Role...
+                    </>
+                  ) : (
+                    <>Save Changes</>
+                  )}
                 </button>
               </div>
             </form>
@@ -366,7 +456,7 @@ function Roles() {
               <th className="px-15 py-3 text-left text-sm font-medium">
                 Users Count
               </th>
-              <th className="px-15 py-3 text-left text-sm font-medium">
+              <th className="px-6 py-3 text-left text-sm font-medium">
                 Status
               </th>
               <th className="px-15 py-3 text-left text-sm font-medium">
@@ -383,7 +473,7 @@ function Roles() {
                     <div className="flex items-center gap-3">
                       <div>
                         <p className="font-medium text-gray-800 text-sm">
-                          {user.rolename}
+                          {capitalRoleName(user.rolename)}
                         </p>
                       </div>
                     </div>
@@ -395,28 +485,28 @@ function Roles() {
                         : "Custom role with configurable permissions)"}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="font-medium text-gray-800 text-sm">
-                      {}
+                  <td className="pl-20 py-4">
+                    <span className="font-bold text-xs bg-gray-100 rounded-md px-2 py-1">
+                      {3}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="font-medium text-gray-800 text-sm">
+                    <span className="font-bold text-white text-xs bg-blue-500 px-3 py-1 rounded-full">
                       {statusCheck(user.rolename)}
                     </span>
                   </td>
 
                   {/* buttons */}
-                  <td className="px- py-4">
+                  <td className="pl-4 py-4">
                     <div className="flex items-center gap-2">
-                      <button className="flex items-center gap-2 text-sm text-gray-700 border border-gray-300 px-3 py-1 rounded-md hover:bg-gray-100 cursor-pointer">
+                      {/* <button className="flex items-center gap-2 text-sm text-gray-700 border border-gray-300 px-3 py-1 rounded-md hover:bg-gray-100 cursor-pointer">
                         <Users size={17} />
                         View Users
-                      </button>
+                      </button> */}
                       <button
-                        onClick={() => {seteditopen(true),
-                          handleEditClick(user, index)}
-                        }
+                        onClick={() => {
+                          seteditopen(true), handleEditClick(user, index);
+                        }}
                         className="flex items-center text-sm gap-2 py-1 px-3 rounded border border-gray-300 hover:bg-gray-200 hover:cursor-pointer"
                       >
                         <Edit size={17} />

@@ -7,6 +7,12 @@ import { Role } from "./roleModels.js";
 export const user = sequelize.define(
   "User",
   {
+    id:{
+      type: DataTypes.UUID,
+      allowNull: false,
+      defaultValue: DataTypes.UUIDV4, // auto-generate UUID v4
+      primaryKey: true
+    },
     firstname: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -21,7 +27,7 @@ export const user = sequelize.define(
       unique: true,
     },
     roleId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: Role,
@@ -40,7 +46,7 @@ export const user = sequelize.define(
 );
 
 //define relation
-Role.hasMany(user, { foreignKey: "roleId" });
+Role.hasMany(user, { foreignKey: "roleId", onDelete: "RESTRICT", onUpdate: "CASCADE"});
 user.belongsTo(Role, { foreignKey: "roleId" });
 
 // // sync + dummy data
@@ -52,25 +58,24 @@ user.belongsTo(Role, { foreignKey: "roleId" });
 //     console.log("✅ Database synced successfully.");
 
 //     // Optional: Insert one dummy data to test connection
-//     // await user.create({
-//     //     firstname: 'John', lastname: 'Doe', email: 'john@example.com', role: 'admin', password: '123456',
-//     //     firstname: 'aaatrtr', lastname: 'Doe', email: 'john@exa909mple.com', role: 'admin', password: '123456',
-//     // })
+//     await user.create({
+//         firstname: 'John', lastname: 'Doe', email: 'john@example.com', roleId: '94349c7e-2734-499c-9121-2d33319cf150', password: '123456',
+//     })
 
 //     // Optional: Insert multiple dummy data to test connection
 //     // await user.bulkCreate([
 //     //     {firstname: "John",
 //     //     lastname: "Doe",
 //     //     email: "john@example.com",
-//     //     roleId: 1,
+//     //     roleId: "00b9c9e1-74e4-494f-b0a0-9b2f92ec9283",
 //     //     password: "123456"},
 //     //     {firstname: "adam",
 //     //     lastname: "lee",
 //     //     email: "adam@exa909mple.com",
-//     //     roleId: 2,
+//     //     roleId: "18557561-b6c0-4030-a620-01337fa4f17e",
 //     //     password: "11223344"}
 //     // ]);
-//     console.log("✅ Dummy data inserted successfully.");
+//     console.log("✅ Dummy user data inserted successfully.");
 //   } catch (error) {
 //     console.log("❌ Error syncing database:", error);
 //   }

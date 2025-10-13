@@ -65,9 +65,16 @@ export const deleteRoleController = async (req,res) =>{
             message: "Role deleted successfully"
         })
     } catch (error) {
+
+        if(error.name=="SequelizeForeignKeyConstraintError"){
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            })
+        }
         res.status(500).json({
             success: false,
-            message: "Role not deleted successfully",
+            message: "❌ Role not deleted successfully (server error)",
             error
         })
     }

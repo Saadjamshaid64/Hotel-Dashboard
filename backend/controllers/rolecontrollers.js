@@ -69,7 +69,7 @@ export const deleteRoleController = async (req,res) =>{
         if(error.name=="SequelizeForeignKeyConstraintError"){
             return res.status(400).json({
                 success: false,
-                message: error.message
+                message: ("Role cannot be deleted because it is assigned to users." || error.message)
             })
         }
         res.status(500).json({

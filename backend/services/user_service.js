@@ -113,12 +113,31 @@
 
 import { user as User } from "../models/userModels.js";
 import { Role } from "../models/roleModels.js";
+import {Provider} from "../models/providerModels.js"
 
 // create user
 export const createUser = async (data) => {
   try {
+    const {firstname, lastname, email, roleId} = data
+
     const newUser = await User.create(data);
     console.log("✅ User created successfully:", newUser.toJSON());
+
+    const role = await Role.findByPk(roleId);
+    if(role && role?.rolename.toLowerCase()=== "provider")
+    {
+      await Provider.create({
+        providername: `${firstname} ${lastname}`,
+        email,
+        specialty: "",
+        userId: newUser.id,
+        phone: 344,
+        npinumber: 12345,
+        statelicenses: [],
+      })
+      console.log("✅ Provider record auto-created for user:", newUser.email);
+    }
+
     return newUser;
   } catch (error) {
     console.log("Error: ", error);

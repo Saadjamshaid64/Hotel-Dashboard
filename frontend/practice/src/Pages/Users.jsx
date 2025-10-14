@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import ProviderManager from "../components/providers/ProviderManager.jsx"; // import component
 import { useUsers } from "../Customhooks/useUsers.js";
-import Roles from "../components/Roles/Roles.jsx";
+// import Roles from "../components/Roles/Roles.jsx";
 import roleRoles from "../Customhooks/roleRoles.js";
+import { Service } from "../components/Services/Service.jsx";
 
 function Users() {
   const { users, addUsers, setUsers, editUser, removeUser } = useUsers();
@@ -196,6 +197,22 @@ function Users() {
           }`}
         >
           Provider Licensing
+        </button>
+
+        <button
+          onClick={() => {setActiveTab("services")
+            settablaoding(true)
+            setTimeout(()=>{
+              settablaoding(false)
+            }, 3000)
+          }}
+          className={`px-4 py-2 text-sm rounded-md transition cursor-pointer ${
+            activeTab == "services"
+              ? "bg-white text-700 font-semibold shadow-sm"
+              : "text-gray-600 font-normal"
+          }`}
+        >
+          Services
         </button>
       </div>
 
@@ -486,9 +503,7 @@ function Users() {
                           Updating User...
                         </>
                       ) : (
-                        <>
-                          Update User
-                        </>
+                        <>Update User</>
                       )}
                     </button>
                   </div>
@@ -606,6 +621,18 @@ function Users() {
           <ProviderManager />
         ))}
       {activeTab === "roles" && <Roles users={users} />}
+      {activeTab === "services" &&
+        (tabloading ? (
+          <div className="flex items-center justify-center h-64 gap-2">
+            {/* spinner */}
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="text-gray-700 font-medium">
+              Loading Services...
+            </span>
+          </div>
+        ) : (
+          <Service/>
+        ))}
     </div>
   );
 }

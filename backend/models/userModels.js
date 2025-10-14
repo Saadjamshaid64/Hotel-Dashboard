@@ -45,7 +45,7 @@ export const user = sequelize.define(
   }
 );
 
-//define relation
+//define relation of role
 Role.hasMany(user, { foreignKey: "roleId", onDelete: "RESTRICT", onUpdate: "CASCADE"});
 user.belongsTo(Role, { foreignKey: "roleId" });
 

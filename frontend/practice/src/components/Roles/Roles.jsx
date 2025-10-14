@@ -100,9 +100,12 @@ function Roles() {
   const handleDelete = async (id) => {
     try {
       const result = await removeRoles(id);
-      if (result?.data) {
+      if (result.success == true) {
         setroles((prev) => prev.filter((user) => user.id !== id));
         console.log("user deleted successfully");
+      }
+      else{
+        alert("Failed to delete role!" || result.message)
       }
     } catch (error) {
       console.log("Error occur", error);
@@ -130,15 +133,15 @@ function Roles() {
       case "patient":
         return "Patient";
       default:
-        return "Custom";
+        return rolename;
     }
   }
 
   // calculate user per role
-  const userPerrole = (roleId) => {
-    if (!users) return 0;
-    return users.filter((user) => user.roleId === roleId).length;
-  };
+  // const userPerrole = (roleId) => {
+  //   if (!users) return 0;
+  //   return users.filter((user) => user.roleId === roleId).length;
+  // };
 
   return (
     <>

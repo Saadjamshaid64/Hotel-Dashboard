@@ -5,9 +5,9 @@ export function useUsers(){
 
     const [users, setUsers] = useState([])
 
-useEffect(()=>{
-    fetchUsers();
-},[])
+            useEffect(()=>{
+                fetchUsers();
+            },[])
 
 
 // fetch user

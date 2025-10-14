@@ -1,20 +1,19 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/supabaseClient.js";
-import dotenv from 'dotenv';
-dotenv.config({ path: '../.env' });
 
 export const Role = sequelize.define(
   "Role",
   {
-    id:{
+    id: {
       type: DataTypes.UUID,
       allowNull: false,
       defaultValue: DataTypes.UUIDV4, // auto-generate UUID v4
-      primaryKey: true
+      primaryKey: true,
     },
     rolename: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true
     },
     roletemplate: {
       type: DataTypes.STRING,

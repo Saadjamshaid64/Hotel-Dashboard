@@ -1,15 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
 import express from "express";
 import {createProvideController, deleteProviderController, editProviderController, fetchProviderController} from "../controllers/provider_controllers.js"
 

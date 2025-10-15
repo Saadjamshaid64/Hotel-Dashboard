@@ -2,6 +2,8 @@ import express from 'express';
 import userRoutes from "./routes/userRoutes.js"
 import roleRoutes from "./routes/roleRoutes.js"
 import providerRoutes from "./routes/providerRoutes.js"
+import medicineRouter from "./routes/medicineRoutes.js"
+import labRoutes from "./routes/labRoutes.js"
 import cors from 'cors';
 
 const app = express()
@@ -21,6 +23,12 @@ app.use('/api/role',roleRoutes)
 
 // call router from provider
 app.use("/api/provider",providerRoutes)
+
+// call router for medicine
+app.use("/api/medicine",medicineRouter)
+
+// call router for lab
+app.use("/api/lab",labRoutes)
 
 app.get("/", (req, res) => {
   res.send("Backend is running 🚀");

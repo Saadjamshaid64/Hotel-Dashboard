@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import ProviderManager from "../components/providers/ProviderManager.jsx"; // import component
 import { useUsers } from "../Customhooks/useUsers.js";
-// import Roles from "../components/Roles/Roles.jsx";
+import Roles from "../components/Roles/Roles.jsx";
 import roleRoles from "../Customhooks/roleRoles.js";
-import { Service } from "../components/Services/Service.jsx";
+import Service  from "../components/Services/Service.jsx";
 
 function Users() {
   const { users, addUsers, setUsers, editUser, removeUser } = useUsers();
@@ -307,7 +307,7 @@ function Users() {
                       onChange={handleChange}
                       className="mt-1 block w-full text-sm rounded-sm border border-gray-300 shadow-sm p-2"
                     >
-                      <option value="">Select user role</option>
+                      <option>Select user role</option>
                       {roles?.map((role) => (
                         <option key={role.id} value={role.id}>
                           {role?.rolename || "No Role"}
@@ -620,7 +620,7 @@ function Users() {
         ) : (
           <ProviderManager />
         ))}
-      {activeTab === "roles" && <Roles users={users} />}
+      {activeTab === "roles" && <Roles/>}
       {activeTab === "services" &&
         (tabloading ? (
           <div className="flex items-center justify-center h-64 gap-2">

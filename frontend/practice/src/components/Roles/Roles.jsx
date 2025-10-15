@@ -166,7 +166,7 @@ function Roles() {
       {/* cards */}
       <div className="flex flex-wrap items-start gap-4 mt-4">
         {/* Total Roles */}
-        <div className="bg-white rounded-md px-6 py-4 flex items-center justify-between border border-gray-200 flex-1 rounded-xl">
+        <div className="bg-white px-6 py-4 flex items-center justify-between border border-gray-200 flex-1 rounded-xl">
           <div>
             <p className="text-sm font-medium text-gray-600">Total Roles</p>
             <p className="text-lg font-bold">{roles.length}</p>
@@ -177,7 +177,7 @@ function Roles() {
         </div>
 
         {/* Active Users */}
-        <div className="bg-white rounded-md px-6 py-4 flex items-center justify-between border border-gray-200 flex-1 rounded-xl">
+        <div className="bg-white px-6 py-4 flex items-center justify-between border border-gray-200 flex-1 rounded-xl">
           <div>
             <p className="text-sm font-medium text-gray-600">Active Users</p>
             <p className="text-lg font-bold">14</p>
@@ -188,7 +188,7 @@ function Roles() {
         </div>
 
         {/* System Roles */}
-        <div className="bg-white rounded-md px-6 py-4 flex items-center justify-between border border-gray-200 flex-1 rounded-xl">
+        <div className="bg-white px-6 py-4 flex items-center justify-between border border-gray-200 flex-1 rounded-xl">
           <div>
             <p className="text-sm font-medium text-gray-600">System Roles</p>
             <p className="text-lg font-bold">10</p>
@@ -199,7 +199,7 @@ function Roles() {
         </div>
 
         {/* Custom Roles */}
-        <div className="bg-white rounded-md px-6 py-4 flex items-center justify-between border border-gray-200 flex-1 rounded-xl">
+        <div className="bg-white px-6 py-4 flex items-center justify-between border border-gray-200 flex-1 rounded-xl">
           <div>
             <p className="text-sm font-medium text-gray-600">Custom Roles</p>
             <p className="text-lg font-bold">10</p>

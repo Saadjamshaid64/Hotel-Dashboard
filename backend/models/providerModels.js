@@ -87,7 +87,7 @@ Provider.belongsTo(user, { foreignKey: "userId"});
 //       ],
 //       userId: "85346096-050d-4a48-8875-71af90819110"
 //     });
-//     console.log("✅ provider Dummy data inserted successfully.")
+//     console.log("✅ provider Dummy data inserted successfully.")   
 //   } catch (error) {
 //     console.log("❌ Error syncing database:", error);
 //   }

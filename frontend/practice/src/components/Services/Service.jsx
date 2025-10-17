@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import useMedicine from "../../Customhooks/useMedicine.js";
 import useLabs from "../../Customhooks/useLabs.js";
+import useBundle from "../../Customhooks/useBundle.js";
 
 function Service() {
   const {
@@ -19,7 +20,13 @@ function Service() {
     editMedicineHook,
     deleteMedicinehook,
   } = useMedicine();
-
+  const {
+    bundles,
+    setBundles,
+    editbundlehook,
+    addbundlehook,
+    deletebundlehook,
+  } = useBundle();
   const { labs, setlabs, addLabs, editLabs, removeLabs } = useLabs();
   const [activetab, setactivetab] = useState("overview");
   const [setopen, setisopen] = useState(false);
@@ -28,8 +35,13 @@ function Service() {
   const [editindex, seteditindex] = useState(null);
   const [editlabindex, seteditlabindex] = useState(null);
   const [labopen, setlabopen] = useState(false);
+  const [medlab, setmedlab] = useState([]);
+  const [editbundleopen, seteditbundleopen] = useState(false);
+  const [bundleopen, setbundleopen] = useState(false);
   const [errors, seterrors] = useState([]);
   const [laberrors, setlaberrors] = useState([]);
+  const [editbundleindex, seteditbundleindex] = useState(null);
+  const [bundleerrors, setbundleerrors] = useState([]);
   const [insidertab, setinsidertab] = useState("overview");
   const [labsData, setlabsData] = useState({
     testname: "",
@@ -41,6 +53,11 @@ function Service() {
     type: "",
     dosage: "",
     frequency: "",
+    purchaseprice: "",
+    salesprice: "",
+  });
+  const [bundleData, setbundleData] = useState({
+    bundlename: "",
   });
 
   // change functionality for lab
@@ -53,6 +70,16 @@ function Service() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setformData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // change functionality for bundle
+  const handleChangebundle = (e) => {
+    // const { name, value } = e.target;
+    // setbundleData((prev)=>({...prev, [name]: value}))
+    setbundleData({
+      ...bundleData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   // submit functionality
@@ -104,13 +131,84 @@ function Service() {
     }
   };
 
+  // submit functionality for bundle
+  const handleSubmitBundle = async (e) => {
+    e.preventDefault();
+    const newErrors = [];
+    if (!bundleData.bundlename) newErrors.push("Bundle name is required");
+    setbundleerrors(newErrors);
+
+    if (newErrors.length > 0) return;
+
+    // 🧮 Step 1: Calculate totals
+    const totalSalesPrice = medlab.reduce(
+      (total, item) => total + (item.salesprice || 0),
+      0
+    );
+
+    const totalPurchasePrice = medlab.reduce(
+      (total, item) => total + (item.purchaseprice || 0),
+      0
+    );
+
+    const discount = totalSalesPrice * 0.1; // 10% discount
+    const finalPrice = totalSalesPrice - discount;
+
+    try {
+      const payload = {
+        bundlename: bundleData.bundlename,
+        salesprice: totalSalesPrice || 0,
+        purchaseprice: totalPurchasePrice || 0,
+        finalprice: finalPrice || 0,
+        items: medlab, // array of selected medicines and labs
+      };
+
+      await addbundlehook(payload); // call your custom hook
+      setbundleopen(false);
+      resetFormbundle();
+      setmedlab([]); // clear selected items
+    } catch (error) {
+      console.error("Error creating bundle:", error);
+      setbundleerrors([error.message || "Failed to create bundle"]);
+    }
+  };
+
+  // submit functionality for screen
+  const toggleItem = (item, type) => {
+    setmedlab((prev) => {
+      const exists = prev.find((i) => i.id === item.id && i.itemType === type);
+      if (exists) {
+        // Item already selected → do nothing
+        return prev;
+      }
+      // add item
+      return [
+        ...prev,
+        {
+          id: item.id,
+          itemType: type,
+          name: item.medicinename || item.testname, // store display name
+          salesprice: item.salesprice,
+          purchaseprice: item.purchaseprice,
+        },
+      ];
+    });
+  };
+
+  // const handleAdditem = () => {
+  //   setmedlab((prev) => ({ ...prev }));
+  // };
+
   // reset form
+
   const resetForm = () => {
     setformData({
       medicinename: "",
       type: "",
       dosage: "",
       frequency: "",
+      purchaseprice: "",
+      salesprice: "",
     });
   };
 
@@ -121,6 +219,14 @@ function Service() {
       purchaseprice: "",
       salesprice: "",
     });
+  };
+
+  // reset from for bundle
+  const resetFormbundle = () => {
+    setbundleData({
+      bundlename: "",
+    });
+    setmedlab([]);
   };
 
   // delete functionality
@@ -149,7 +255,20 @@ function Service() {
     }
   };
 
-  //  edit functionality
+  // delete functionality for bundle
+  const handleDeletebundle = async (id) => {
+    try {
+      const result = await deletebundlehook(id);
+      if (result?.data) {
+        setBundles((prev) => prev.filter((user) => user.id !== id));
+        console.log("Bundle deleted successfully");
+      }
+    } catch (error) {
+      console.log("Error occur", error);
+    }
+  };
+
+  // edit functionality
   const handelEditClick = (user, index) => {
     try {
       setformData(user);
@@ -201,7 +320,71 @@ function Service() {
       }
     } catch (error) {
       console.log("Error updating user:", error);
-      seterrors([error.message || "Failed to update user"]);
+      setbundleerrors([error.message || "Failed to update user"]);
+    }
+  };
+
+  // edit functionality for bundle
+  const handelEditClickbundle = (bundle, index) => {
+    try {
+      setbundleData(bundle);
+      // setmedlab(bundle.items  || [])
+
+      const selectedItems = bundle.BundleItems.map((item) => ({
+        id: item.itemId,
+        itemType: item.itemType,
+        name:
+          item.itemType === "medicine"
+            ? item.Medicine?.medicinename
+            : item.Lab?.testname,
+        salesprice: item.Medicine?.salesprice || item.Lab?.salesprice || 0,
+        purchaseprice:
+          item.Medicine?.purchaseprice || item.Lab?.purchaseprice || 0,
+      }));
+
+      console.log(
+        "Bundle items:",
+        bundle.BundleItems,
+        "Mapped items:",
+        selectedItems
+      );
+      setmedlab(selectedItems);
+      seteditbundleopen(true);
+      seteditbundleindex(index);
+    } catch (error) {
+      console.log("Error occur", error);
+      setbundleerrors([error.message || "Failed to update user"]);
+    }
+  };
+
+  const handleEditSubmitbundle = async (e) => {
+    e.preventDefault();
+    try {
+      const id = bundles[editbundleindex].id;
+
+      // 🧮 Step 1: Calculate totals
+      const totalSalesPrice = medlab.reduce(
+        (total, item) => total + (item.salesprice || 0),
+        0
+      );
+
+      const discount = totalSalesPrice * 0.1; // 10% discount
+      const finalPrice = totalSalesPrice - discount;
+
+      const payload = {
+        ...bundleData,
+        items: medlab,
+        finalprice: finalPrice,
+      };
+      const result = await editbundlehook(id, payload);
+      if (result) {
+        console.log("user edited successfully");
+        resetFormbundle();
+        seteditbundleopen(false);
+      }
+    } catch (error) {
+      console.log("Error updating user:", error);
+      setbundleerrors([error.message || "Failed to update user"]);
     }
   };
 
@@ -215,12 +398,12 @@ function Service() {
         </p>
       </div>
 
-      {/* action card */}
+      {/* action card*/}
       <div className="flex flex-wrap items-start mt-5 gap-4">
         <div className="bg-white px-6 py-4 rounded-xl flex items-center justify-between border border-gray-200 flex-1">
           <div>
             <p className="text-sm font-medium text-gray-600">Medications</p>
-            <p className="text-lg font-bold">18</p>
+            <p className="text-lg font-bold">{medicine.length}</p>
           </div>
           <div className="p-2 bg-blue-100 rounded-lg">
             <Pill className="w-5 h-5 text-blue-600" />
@@ -230,7 +413,7 @@ function Service() {
         <div className="bg-white px-6 py-4 rounded-xl flex items-center justify-between border border-gray-200 flex-1">
           <div>
             <p className="text-sm font-medium text-gray-600">Lab Tests</p>
-            <p className="text-lg font-bold">5</p>
+            <p className="text-lg font-bold">{labs.length}</p>
           </div>
           <div className="p-2 bg-green-100 rounded-lg">
             <Stethoscope className="w-5 h-5 text-green-600" />
@@ -240,7 +423,7 @@ function Service() {
         <div className="bg-white px-6 py-4 rounded-xl flex items-center justify-between border border-gray-200 flex-1">
           <div>
             <p className="text-sm font-medium text-gray-600">Bundles</p>
-            <p className="text-lg font-bold">0</p>
+            <p className="text-lg font-bold">{bundles.length}</p>
           </div>
           <div className="p-2 bg-purple-100 rounded-lg">
             <Package className="w-5 h-5 text-purple-600" />
@@ -381,7 +564,7 @@ function Service() {
                 <Package size={16} />
                 <p>Bundles</p>
               </div>
-              <p className="ml-3">0</p>
+              <p className="ml-3">{bundles.length}</p>
             </div>
           </button>
         </div>
@@ -396,13 +579,19 @@ function Service() {
             </div>
           </button>
           <button
-            className="flex items-center gap-2 border border-gray-300 text-sm rounded-md px-3 py-3 font-semibold cursor-pointer"
+            className="flex items-center gap-2 border border-gray-300 text-sm rounded-md px-5 py-3 font-semibold cursor-pointer"
             onClick={() => setlabopen(true)}
           >
             <Plus size={16} />
             <p>Add Lab</p>
           </button>
-          <button></button>
+          <button
+            className="flex items-center text-white bg-blue-600 gap-2 border border-gray-300 text-sm rounded-md px-5 py-3 font-semibold cursor-pointer"
+            onClick={() => setbundleopen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <p>Add Bundle</p>
+          </button>
         </div>
       </div>
 
@@ -414,7 +603,7 @@ function Service() {
       >
         <div className="fixed inset-0 bg-black/75" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-4xl h-[360px] rounded-lg bg-white p-6 shadow-lg">
+          <Dialog.Panel className="w-full max-w-4xl h-[450px] rounded-lg bg-white p-6 shadow-lg">
             <Dialog.Title className="text-base font-semibold mb-2">
               Create Enhanced Medication
             </Dialog.Title>
@@ -488,6 +677,34 @@ function Service() {
                     <option>Weekly</option>
                     <option>Monthly</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold mb-2 block">
+                    Purchase Price *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.purchaseprice}
+                    onChange={handleChange}
+                    name="purchaseprice"
+                    placeholder="$ 0.00"
+                    className="w-full border text-sm border-gray-300 pl-2 py-2 rounded-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold mb-2 block">
+                    Sales Price *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.salesprice}
+                    onChange={handleChange}
+                    name="salesprice"
+                    placeholder="$ 0.00"
+                    className="w-full border text-sm border-gray-300 pl-2 py-2 rounded-md"
+                  />
                 </div>
               </div>
               <div className="flex justify-end space-x-3 mt-5 text-sm font-medium">
@@ -603,6 +820,251 @@ function Service() {
         </div>
       </Dialog>
 
+      {/* Add user model for bundle*/}
+      <Dialog
+        open={bundleopen}
+        onClose={() => setbundleopen(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/75" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-4xl h-[720px] rounded-lg bg-white p-6 shadow-lg overflow-y-auto">
+            <Dialog.Title className="text-base font-semibold mb-2">
+              Create New Bundle
+            </Dialog.Title>
+            {bundleerrors.length > 0 && (
+              <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-md text-sm">
+                <ul className="list-disc list-inside">
+                  {bundleerrors.map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <form onSubmit={handleSubmitBundle}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-lg">
+                <p className="col-span-2 text-sm text-gray-500 p-0">
+                  Create a bundle by combining medications and lab tests with
+                  special pricing.
+                </p>
+                <div className="col-span-2">
+                  <label className="text-sm font-semibold mb-2 block">
+                    Bundle Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="bundlename"
+                    value={bundleData.bundlename}
+                    onChange={handleChangebundle}
+                    placeholder="e.g., TRT Starter Pack, Hormone Panel Bundle"
+                    className="w-full border text-sm border-gray-300 pl-2 py-2 rounded-md"
+                    autoFocus
+                  />
+                </div>
+                <div className="text-sm mb-3">
+                  <h1 className="font-semibold">Add Items to Bundle</h1>
+                  <p className="text-gray-400 text-xs">
+                    Search and select medications or lab tests to include
+                  </p>
+                </div>
+                <div className="col-span-2 border border-gray-300 rounded-md p-3 max-h-50 overflow-y-auto">
+                  {medicine?.map((med) => (
+                    <div
+                      key={med.id}
+                      className="w-full flex justify-between items-center mb-2 p-2 hover:bg-gray-50 rounded-md border border-gray-200"
+                    >
+                      <div className="bg-blue-200 flex text-xs items-center gap-2 rounded-md px-2 py-1">
+                        <Pill className="text-blue-700" size={14} />
+                        <p className="text-blue-700 font-semibold">
+                          Enhanced Medication
+                        </p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">{med.medicinename}</p>
+                        <p className="text-gray-500 text-sm">
+                          ${med.salesprice}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="px-3 py-1 rounded-md text-white bg-blue-600 cursor-pointer"
+                        onClick={() => toggleItem(med, "medicine")}
+                      >
+                        +
+                      </button>
+                    </div>
+                  ))}
+                  {labs?.map((lab) => (
+                    <div
+                      key={lab.id}
+                      className="w-full flex justify-between items-center mb-2 p-2 hover:bg-gray-50 rounded-md border border-gray-200"
+                    >
+                      <div className="bg-green-200 flex text-xs items-center gap-2 rounded-md px-2 py-1">
+                        <Stethoscope className="text-green-700" size={14} />
+                        <p className="text-green-700 font-semibold">Lab Test</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">{lab.testname}</p>
+                        <p className="text-gray-500 text-sm">
+                          ${lab.salesprice}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="px-3 py-1 rounded-md text-white bg-blue-600 cursor-pointer"
+                        onClick={() => toggleItem(lab, "lab")}
+                      >
+                        +
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* the selected item */}
+                <div className="col-span-2 mt-1">
+                  <h3 className="font-semibold mb-2">Selected Items</h3>
+                  {medlab.length === 0 ? (
+                    <p className="text-gray-400 text-sm">
+                      No items selected yet.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {medlab.map((item) => (
+                        <div
+                          key={`${item.itemType}-${item.id}`}
+                          className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <p className="font-semibold text-base mb-1">
+                            {item.itemType === "medicine"
+                              ? item.medicinename
+                              : item.testname}
+                          </p>
+                          <p className="text-gray-600 text-sm mb-1">
+                            Type: {item.itemType}
+                          </p>
+                          <p className="text-gray-600 text-sm mb-1">
+                            Name: {item.name}
+                          </p>
+                          <p className="text-gray-700 text-sm mb-1">
+                            Sales Price: ${item.salesprice}
+                          </p>
+                          <p className="text-gray-700 text-sm">
+                            Purchase Price: ${item.purchaseprice}
+                          </p>
+                          <button
+                            type="button"
+                            className="mt-2 px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600 text-xs cursor-pointer"
+                            onClick={() =>
+                              setmedlab((prev) =>
+                                prev.filter(
+                                  (i) =>
+                                    !(i.id === item.id && i.type === item.type)
+                                )
+                              )
+                            }
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Show Summary Only When Items Selected and prices*/}
+                {medlab.length > 0 && (
+                  <div className="col-span-2 border-t pt-4">
+                    <h3 className="font-semibold mb-2 text-gray-800">
+                      Bundle Summary
+                    </h3>
+
+                    <div className="text-sm space-y-2">
+                      <p>
+                        <span className="font-medium text-gray-700">
+                          Bundle Name:
+                        </span>{" "}
+                        {bundleData.bundlename || "—"}
+                      </p>
+
+                      <p>
+                        <span className="font-medium text-gray-700">
+                          Total Sales Price:
+                        </span>{" "}
+                        $
+                        {medlab
+                          .reduce(
+                            (total, item) => total + (item.salesprice || 0),
+                            0
+                          )
+                          .toFixed(2)}
+                      </p>
+
+                      <p>
+                        <span className="font-medium text-gray-700">
+                          Total Purchase Price:
+                        </span>{" "}
+                        $
+                        {medlab
+                          .reduce(
+                            (total, item) => total + (item.purchaseprice || 0),
+                            0
+                          )
+                          .toFixed(2)}
+                      </p>
+
+                      {/* Discount */}
+                      <p>
+                        <span className="font-medium text-gray-700">
+                          Discount (10%):
+                        </span>{" "}
+                        $
+                        {(
+                          medlab.reduce(
+                            (total, item) => total + (item.salesprice || 0),
+                            0
+                          ) * 0.1
+                        ).toFixed(2)}
+                      </p>
+
+                      {/* Final Price */}
+                      <p className="text-lg font-semibold text-green-700 mt-1">
+                        Final Price: $
+                        {(
+                          medlab.reduce(
+                            (total, item) => total + (item.salesprice || 0),
+                            0
+                          ) * 0.9
+                        ).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* buttons */}
+              <div className="flex justify-end space-x-3 mt-5 text-sm font-medium">
+                <button
+                  type="button"
+                  className="w-60 px-4 py-2 rounded-md border border-gray-300 text-gray-700 cursor-pointer"
+                  onClick={() => {
+                    setbundleopen(false);
+                    resetFormbundle();
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="w-60 flex items-center justify-center gap-2 px-4 py-2 rounded-md cursor-pointer bg-blue-600 text-white"
+                >
+                  Create Bundle
+                </button>
+              </div>
+            </form>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
       {/* Edit User Model */}
       <Dialog
         open={editopen}
@@ -611,7 +1073,7 @@ function Service() {
       >
         <div className="fixed inset-0 bg-black/75" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-4xl h-[360px] rounded-lg bg-white p-6 shadow-lg">
+          <Dialog.Panel className="w-full max-w-4xl h-[450px] rounded-lg bg-white p-6 shadow-lg">
             <Dialog.Title className="text-base font-semibold mb-2">
               Create Enhanced Medication
             </Dialog.Title>
@@ -685,6 +1147,33 @@ function Service() {
                     <option>Weekly</option>
                     <option>Monthly</option>
                   </select>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold mb-2 block">
+                    Purchase Price *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.purchaseprice}
+                    onChange={handleChange}
+                    name="purchaseprice"
+                    placeholder="$ 0.00"
+                    className="w-full border text-sm border-gray-300 pl-2 py-2 rounded-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold mb-2 block">
+                    Sales Price *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.salesprice}
+                    onChange={handleChange}
+                    name="salesprice"
+                    placeholder="$ 0.00"
+                    className="w-full border text-sm border-gray-300 pl-2 py-2 rounded-md"
+                  />
                 </div>
               </div>
               <div className="flex justify-end space-x-3 mt-5 text-sm font-medium">
@@ -800,6 +1289,250 @@ function Service() {
         </div>
       </Dialog>
 
+      {/* Edit User Model for bundle*/}
+      <Dialog
+        open={editbundleopen}
+        onClose={() => seteditbundleopen(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/75" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-4xl h-[720px] rounded-lg bg-white p-6 shadow-lg overflow-y-auto">
+            <Dialog.Title className="text-base font-semibold mb-2">
+              Edit Bundle
+            </Dialog.Title>
+            {bundleerrors.length > 0 && (
+              <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-md text-sm">
+                <ul className="list-disc list-inside">
+                  {bundleerrors.map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <form onSubmit={handleEditSubmitbundle}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-lg">
+                <p className="col-span-2 text-sm text-gray-500 p-0">
+                  Create a bundle by combining medications and lab tests with
+                  special pricing.
+                </p>
+                <div className="col-span-2">
+                  <label className="text-sm font-semibold mb-2 block">
+                    Bundle Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="bundlename"
+                    value={bundleData.bundlename}
+                    onChange={handleChangebundle}
+                    placeholder="e.g., TRT Starter Pack, Hormone Panel Bundle"
+                    className="w-full border text-sm border-gray-300 pl-2 py-2 rounded-md"
+                    autoFocus
+                  />
+                </div>
+                <div className="text-sm mb-3">
+                  <h1 className="font-semibold">Add Items to Bundle</h1>
+                  <p className="text-gray-400 text-xs">
+                    Search and select medications or lab tests to include
+                  </p>
+                </div>
+                <div className="col-span-2 border border-gray-300 rounded-md p-3 max-h-50 overflow-y-auto">
+                  {medicine?.map((med) => (
+                    <div
+                      key={med.id}
+                      className="w-full flex justify-between items-center mb-2 p-2 hover:bg-gray-50 rounded-md border border-gray-200"
+                    >
+                      <div className="bg-blue-200 flex text-xs items-center gap-2 rounded-md px-2 py-1">
+                        <Pill className="text-blue-700" size={14} />
+                        <p className="text-blue-700 font-semibold">
+                          Enhanced Medication
+                        </p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">{med.medicinename}</p>
+                        <p className="text-gray-500 text-sm">
+                          ${med.salesprice}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="px-3 py-1 rounded-md text-white bg-blue-600 cursor-pointer"
+                        onClick={() => toggleItem(med, "medicine")}
+                      >
+                        +
+                      </button>
+                    </div>
+                  ))}
+                  {labs?.map((lab) => (
+                    <div
+                      key={lab.id}
+                      className="w-full flex justify-between items-center mb-2 p-2 hover:bg-gray-50 rounded-md border border-gray-200"
+                    >
+                      <div className="bg-green-200 flex text-xs items-center gap-2 rounded-md px-2 py-1">
+                        <Stethoscope className="text-green-700" size={14} />
+                        <p className="text-green-700 font-semibold">Lab Test</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">{lab.testname}</p>
+                        <p className="text-gray-500 text-sm">
+                          ${lab.salesprice}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="px-3 py-1 rounded-md text-white bg-blue-600 cursor-pointer"
+                        onClick={() => toggleItem(lab, "lab")}
+                      >
+                        +
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* the selected item */}
+                <div className="col-span-2 mt-1">
+                  <h3 className="font-semibold mb-2">Selected Items</h3>
+                  {medlab.length === 0 ? (
+                    <p className="text-gray-400 text-sm">
+                      No items selected yet.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {medlab.map((item) => (
+                        <div
+                          key={`${item.itemType}-${item.id}`}
+                          className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <p className="font-semibold text-base mb-1">
+                            {item.itemType === "medicine"
+                              ? item.medicinename
+                              : item.testname}
+                          </p>
+                          <p className="text-gray-600 text-sm mb-1">
+                            Type: {item.itemType}
+                          </p>
+                          <p className="text-gray-600 text-sm mb-1">
+                            Name: {item.name}
+                          </p>
+                          <p className="text-gray-700 text-sm mb-1">
+                            Sales Price: ${item.salesprice}
+                          </p>
+                          <p className="text-gray-700 text-sm">
+                            Purchase Price: ${item.purchaseprice}
+                          </p>
+                          {/* Optional remove button */}
+                          <button
+                            type="button"
+                            className="mt-2 px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600 text-xs cursor-pointer"
+                            onClick={() =>
+                              setmedlab((prev) =>
+                                prev.filter(
+                                  (i) =>
+                                    !(i.id === item.id && i.type === item.type)
+                                )
+                              )
+                            }
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Show Summary Only When Items Selected and prices*/}
+                {medlab.length > 0 && (
+                  <div className="col-span-2 border-t pt-4">
+                    <h3 className="font-semibold mb-2 text-gray-800">
+                      Bundle Summary
+                    </h3>
+
+                    <div className="text-sm space-y-2">
+                      <p>
+                        <span className="font-medium text-gray-700">
+                          Bundle Name:
+                        </span>{" "}
+                        {bundleData.bundlename || "—"}
+                      </p>
+
+                      <p>
+                        <span className="font-medium text-gray-700">
+                          Total Sales Price:
+                        </span>{" "}
+                        $
+                        {medlab
+                          .reduce(
+                            (total, item) => total + (item.salesprice || 0),
+                            0
+                          )
+                          .toFixed(2)}
+                      </p>
+
+                      <p>
+                        <span className="font-medium text-gray-700">
+                          Total Purchase Price:
+                        </span>{" "}
+                        $
+                        {medlab
+                          .reduce(
+                            (total, item) => total + (item.purchaseprice || 0),
+                            0
+                          )
+                          .toFixed(2)}
+                      </p>
+
+                      {/* Discount */}
+                      <p>
+                        <span className="font-medium text-gray-700">
+                          Discount (10%):
+                        </span>{" "}
+                        $
+                        {(
+                          medlab.reduce(
+                            (total, item) => total + (item.salesprice || 0),
+                            0
+                          ) * 0.1
+                        ).toFixed(2)}
+                      </p>
+
+                      {/* Final Price */}
+                      <p className="text-lg font-semibold text-green-700 mt-1">
+                        Final Price: $
+                        {(
+                          medlab.reduce(
+                            (total, item) => total + (item.salesprice || 0),
+                            0
+                          ) * 0.9
+                        ).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end space-x-3 mt-5 text-sm font-medium">
+                <button
+                  type="button"
+                  className="w-60 px-4 py-2 rounded-md border border-gray-300 text-gray-700 cursor-pointer"
+                  onClick={() => {
+                    seteditbundleopen(false);
+                    resetFormbundle();
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="w-60 flex items-center justify-center gap-2 px-4 py-2 rounded-md cursor-pointer bg-blue-600 text-white"
+                >
+                  Update Bundle
+                </button>
+              </div>
+            </form>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
       {/* medicine table */}
       {insidertab === "medications" && (
         <div className="mt-6 overflow-x-auto">
@@ -822,6 +1555,9 @@ function Service() {
                   Frequency
                 </th>
                 <th className="px-15 py-3 text-left text-sm font-medium text-gray-600">
+                  Price
+                </th>
+                <th className="px-15 py-3 text-left text-sm font-medium text-gray-600">
                   Actions
                 </th>
               </tr>
@@ -830,9 +1566,9 @@ function Service() {
               {medicine.length > 0 ? (
                 medicine.map((user, index) => (
                   <tr key={index} className="border-t">
-                    <td className="px-6 py-6">
-                      <div className="bg-blue-200 flex text-sm items-center gap-2 rounded-md inline-flex px-2 py-1">
-                        <Pill className="text-blue-700" size={15} />
+                    <td className="pl-3 py-6">
+                      <div className="bg-blue-200 flex text-xs items-center gap-2 rounded-md inline-flex px-2 py-1">
+                        <Pill className="text-blue-700" size={14} />
                         <p className="text-blue-700 font-semibold">
                           Enhanced Medication
                         </p>
@@ -850,6 +1586,11 @@ function Service() {
                     <td>
                       <span className="text-sm font-semibold pl-16">
                         {user.frequency}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="text-sm font-semibold pl-16">
+                        {user.salesprice - user.purchaseprice}
                       </span>
                     </td>
 
@@ -912,8 +1653,8 @@ function Service() {
                 labs.map((user, index) => (
                   <tr key={index} className="border-t">
                     <td className="px-6 py-6">
-                      <div className="bg-green-200 flex text-sm items-center gap-2 rounded-md inline-flex px-2 py-1">
-                        <Stethoscope className="text-green-700" size={15} />
+                      <div className="bg-green-200 flex text-xs items-center gap-2 rounded-md inline-flex px-2 py-1">
+                        <Stethoscope className="text-green-700" size={14} />
                         <p className="text-green-700 font-semibold">Lab Test</p>
                       </div>
                     </td>
@@ -941,6 +1682,80 @@ function Service() {
                         <button
                           className="p-1 rounded border cursor-pointer hover:bg-red-300 hover:transition duration-300"
                           onClick={() => handleDeletelab(user.id)}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="text-center py-4 text-gray-500">
+                    Nothing to show!
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* bundle table */}
+      {insidertab === "bundles" && (
+        <div className="mt-6 overflow-x-auto">
+          <table className="w-full bg-white border border-gray-200 rounded-lg">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Type
+                </th>
+                <th className="px-15 py-3 text-left text-sm font-medium text-gray-600">
+                  Bundle Name
+                </th>
+                <th className="px-15 py-3 text-left text-sm font-medium text-gray-600">
+                  Details
+                </th>
+                <th className="px-15 py-3 text-left text-sm font-medium text-gray-600">
+                  Price
+                </th>
+                <th className="px-15 py-3 text-left text-sm font-medium text-gray-600">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {bundles.length > 0 ? (
+                bundles.map((user, index) => (
+                  <tr key={index} className="border-t">
+                    <td className="px-6 py-6">
+                      <div className="bg-purple-200 flex text-xs items-center gap-2 rounded-md inline-flex px-2 py-1">
+                        <Package className="text-purple-700" size={14} />
+                        <p className="text-purple-700 font-semibold">Bundle</p>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="px-15 text-sm font-semibold">
+                        {user.bundlename}
+                      </span>
+                    </td>
+                    <td className="text-sm font-semibold pl-16">Items</td>
+                    <td className="text-sm font-semibold pl-16">
+                      ${user.finalprice.toFixed(2)}
+                    </td>
+
+                    {/* buttons */}
+                    <td className="px- py-4">
+                      <div className="pl-14 flex gap-2">
+                        <button
+                          className="p-1 rounded border cursor-pointer hover:bg-gray-300 hover:transition"
+                          onClick={() => handelEditClickbundle(user, index)}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className="p-1 rounded border cursor-pointer hover:bg-red-300 hover:transition duration-300"
+                          onClick={() => handleDeletebundle(user.id)}
                         >
                           🗑️
                         </button>

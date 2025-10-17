@@ -5,11 +5,11 @@ import ProviderManager from "../components/providers/ProviderManager.jsx"; // im
 import { useUsers } from "../Customhooks/useUsers.js";
 import Roles from "../components/Roles/Roles.jsx";
 import roleRoles from "../Customhooks/roleRoles.js";
-import Service  from "../components/Services/Service.jsx";
+import Service from "../components/Services/Service.jsx";
 
 function Users() {
   const { users, addUsers, setUsers, editUser, removeUser } = useUsers();
-  const { roles, fetchRoles } = roleRoles();
+  const { roles } = roleRoles();
 
   const [activeTab, setActiveTab] = useState("management");
   const [isOpen, setIsOpen] = useState(false); // Add User modal
@@ -26,10 +26,6 @@ function Users() {
     password: "",
   });
 
-  // fetch when whenever roles change
-  // useEffect(() => {
-  //   fetchRoles();
-  // }, [roles]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -105,8 +101,7 @@ function Users() {
   const handleEditClick = async (user, index) => {
     try {
       setEditIndex(index);
-      // setFormData(submittedData[index]); // pre-fill form with user data
-      setFormData(user); // pre-fill form with user data
+      setFormData(user);
       setEditOpen(true);
     } catch (error) {
       console.log("Error occur", error);
@@ -200,11 +195,12 @@ function Users() {
         </button>
 
         <button
-          onClick={() => {setActiveTab("services")
-            settablaoding(true)
-            setTimeout(()=>{
-              settablaoding(false)
-            }, 3000)
+          onClick={() => {
+            setActiveTab("services");
+            settablaoding(true);
+            setTimeout(() => {
+              settablaoding(false);
+            }, 3000);
           }}
           className={`px-4 py-2 text-sm rounded-md transition cursor-pointer ${
             activeTab == "services"
@@ -620,7 +616,7 @@ function Users() {
         ) : (
           <ProviderManager />
         ))}
-      {activeTab === "roles" && <Roles/>}
+      {activeTab === "roles" && <Roles />}
       {activeTab === "services" &&
         (tabloading ? (
           <div className="flex items-center justify-center h-64 gap-2">
@@ -631,7 +627,7 @@ function Users() {
             </span>
           </div>
         ) : (
-          <Service/>
+          <Service />
         ))}
     </div>
   );

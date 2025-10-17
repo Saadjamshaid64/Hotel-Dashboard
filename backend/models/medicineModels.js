@@ -26,6 +26,14 @@ export const Medicine = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    purchaseprice: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    salesprice: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   },
   {
     timestamps: true,
@@ -44,6 +52,8 @@ export const Medicine = sequelize.define(
 //       type: "oral",
 //       dosage: "100ml",
 //       frequency: "Daily",
+//       purchaseprice: 12,
+//       salesprice: 30
 //     });
 
 //     console.log("✅ provider Dummy data inserted successfully.");

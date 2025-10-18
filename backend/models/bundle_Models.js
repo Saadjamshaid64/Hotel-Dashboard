@@ -22,6 +22,10 @@ export const Bundle = sequelize.define(
       type: DataTypes.FLOAT,
       allowNull: false,
     },
+    discount:{
+      type: DataTypes.FLOAT,
+      allowNull: false
+    },
     finalprice: {
       type: DataTypes.FLOAT,
       allowNull: false,
@@ -39,6 +43,7 @@ export const Bundle = sequelize.define(
 //     bundlename: "temp",
 //     salesprice: 10,
 //     purchaseprice: 5,
+//     discount: 10,
 //     finalprice: 8
 //     })
 

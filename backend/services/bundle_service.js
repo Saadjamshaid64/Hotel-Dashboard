@@ -24,6 +24,7 @@ export const createbundleService = async (data) => {
         bundlename: data.bundlename,
         salesprice: data.salesprice,
         purchaseprice: data.purchaseprice,
+        discount: data.discount,
         finalprice: data.finalprice,
       },
       { transaction }
@@ -65,6 +66,7 @@ export const editbundleService = async (id, data) => {
         bundlename: data.bundlename,
         salesprice: data.salesprice,
         purchaseprice: data.purchaseprice,
+        discount: data.discount,
         finalprice: data.finalprice,
       },
       { transaction }

@@ -58,6 +58,7 @@ function Service() {
   });
   const [bundleData, setbundleData] = useState({
     bundlename: "",
+    discount: "",
   });
 
   // change functionality for lab
@@ -140,7 +141,6 @@ function Service() {
 
     if (newErrors.length > 0) return;
 
-    // 🧮 Step 1: Calculate totals
     const totalSalesPrice = medlab.reduce(
       (total, item) => total + (item.salesprice || 0),
       0
@@ -151,14 +151,16 @@ function Service() {
       0
     );
 
-    const discount = totalSalesPrice * 0.1; // 10% discount
-    const finalPrice = totalSalesPrice - discount;
+    // 🧮 Step 2: Calculate discount and final price
+    const discountPercent = parseFloat(bundleData.discount) || 0; // e.g. 10 for 10%
+    const finalPrice = totalSalesPrice * (1 - discountPercent / 100);
 
     try {
       const payload = {
         bundlename: bundleData.bundlename,
         salesprice: totalSalesPrice || 0,
         purchaseprice: totalPurchasePrice || 0,
+        discount: bundleData.discount || 0,
         finalprice: finalPrice || 0,
         items: medlab, // array of selected medicines and labs
       };
@@ -225,6 +227,7 @@ function Service() {
   const resetFormbundle = () => {
     setbundleData({
       bundlename: "",
+      discount: "",
     });
     setmedlab([]);
   };
@@ -368,11 +371,13 @@ function Service() {
         0
       );
 
-      const discount = totalSalesPrice * 0.1; // 10% discount
-      const finalPrice = totalSalesPrice - discount;
+      // 🧮 Step 2: Calculate discount and final price
+      const discountPercent = parseFloat(bundleData.discount) || 0; // e.g. 10 for 10%
+      const finalPrice = totalSalesPrice * (1 - discountPercent / 100);
 
       const payload = {
         ...bundleData,
+        discount: bundleData.discount,
         items: medlab,
         finalprice: finalPrice,
       };
@@ -1013,18 +1018,15 @@ function Service() {
                       </p>
 
                       {/* Discount */}
-                      <p>
-                        <span className="font-medium text-gray-700">
-                          Discount (10%):
-                        </span>{" "}
-                        $
-                        {(
-                          medlab.reduce(
-                            (total, item) => total + (item.salesprice || 0),
-                            0
-                          ) * 0.1
-                        ).toFixed(2)}
-                      </p>
+                      <label className="font-semibold ">Discount: </label>
+                      <input
+                        type="text"
+                        name="discount"
+                        value={bundleData.discount}
+                        onChange={handleChangebundle}
+                        placeholder="Enter the discount e.g. 10"
+                        className="border border-gray-300 px-1 py-1 rounded-md text-xs"
+                      />
 
                       {/* Final Price */}
                       <p className="text-lg font-semibold text-green-700 mt-1">
@@ -1033,7 +1035,8 @@ function Service() {
                           medlab.reduce(
                             (total, item) => total + (item.salesprice || 0),
                             0
-                          ) * 0.9
+                          ) *
+                          (1 - (parseFloat(bundleData.discount) || 0) / 100)
                         ).toFixed(2)}
                       </p>
                     </div>
@@ -1455,7 +1458,6 @@ function Service() {
                         </span>{" "}
                         {bundleData.bundlename || "—"}
                       </p>
-
                       <p>
                         <span className="font-medium text-gray-700">
                           Total Sales Price:
@@ -1468,7 +1470,6 @@ function Service() {
                           )
                           .toFixed(2)}
                       </p>
-
                       <p>
                         <span className="font-medium text-gray-700">
                           Total Purchase Price:
@@ -1481,21 +1482,16 @@ function Service() {
                           )
                           .toFixed(2)}
                       </p>
-
                       {/* Discount */}
-                      <p>
-                        <span className="font-medium text-gray-700">
-                          Discount (10%):
-                        </span>{" "}
-                        $
-                        {(
-                          medlab.reduce(
-                            (total, item) => total + (item.salesprice || 0),
-                            0
-                          ) * 0.1
-                        ).toFixed(2)}
-                      </p>
-
+                      <label className="font-semibold ">Discount: </label>
+                      <input
+                        type="text"
+                        name="discount"
+                        value={bundleData.discount}
+                        onChange={handleChangebundle}
+                        placeholder="Enter the discount e.g. 10"
+                        className="border border-gray-300 px-1 py-1 rounded-md text-xs"
+                      />
                       {/* Final Price */}
                       <p className="text-lg font-semibold text-green-700 mt-1">
                         Final Price: $
@@ -1503,7 +1499,8 @@ function Service() {
                           medlab.reduce(
                             (total, item) => total + (item.salesprice || 0),
                             0
-                          ) * 0.9
+                          ) *
+                          (1 - (parseFloat(bundleData.discount) || 0) / 100)
                         ).toFixed(2)}
                       </p>
                     </div>

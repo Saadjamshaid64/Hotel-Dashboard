@@ -1,5 +1,5 @@
 import { Dialog } from "@headlessui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import ProviderManager from "../components/providers/ProviderManager.jsx"; // import component
 import { useUsers } from "../Customhooks/useUsers.js";

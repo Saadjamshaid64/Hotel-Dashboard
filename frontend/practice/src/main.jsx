@@ -5,13 +5,17 @@ import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } 
 import Dashboard from './Pages/Dashboard.jsx'
 import Layout from './Layout.jsx'
 import Users from './Pages/Users.jsx'
+import Patient from './Pages/Patient.jsx'
+import Schedule from './Pages/Schedule.jsx'
 
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path='/' element={<Layout/>}>
       <Route path='' element={<Dashboard/>}/>
+      <Route path='patient' element={<Patient/>}/>
       <Route path='user' element={<Users/>}/>
+      <Route path="schedule" element={<Schedule/>}/>
     </Route>
   )
 )

@@ -1,9 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Users } from "lucide-react"; // Import icons
+import { LayoutDashboard, Users, Calendar } from "lucide-react"; // Import icons
 
 function Sidebar() {
   const menuItems = [
     { name: "Dashboard", path: "", icon: <LayoutDashboard size={18} /> },
+    { name: "Patient", path: "patient", icon: <Users size={18} /> },
+    {name: "Schedule", path: "schedule", icon: <Calendar size={18}/>},
     { name: "User", path: "user", icon: <Users size={18} /> },
   ];
 

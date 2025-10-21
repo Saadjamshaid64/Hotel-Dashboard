@@ -30,21 +30,6 @@ export const BundleItems = sequelize.define(
       type: DataTypes.ENUM("medicine", "lab"), // add more later if needed
       allowNull: true,
     },
-    // medicineId: {
-    //   type: DataTypes.UUID,
-    //   allowNull: true,
-    //   references: {
-    //     model: Medicine,
-    //     key: "id",
-    //   },
-    // },
-    // labId: {
-    //   type: DataTypes.UUID,
-    //   allowNull: true,
-    //   references: {
-    //     model: Lab,
-    //     key: "id",
-    //   },
   },
   { timestamps: true, tableName: "bundleitems" }
 );
@@ -68,9 +53,9 @@ BundleItems.belongsTo(Lab, { foreignKey: "labId" });
 
 //     // Optional: Insert one dummy data to test connection
 //     await BundleItems.create({
-//       bundleId: "338fd8f1-9c93-4b74-8c50-7599000b8de4",
-//       itemId: "0e3c99c1-8474-4668-839a-244b96c84cec",
-//       itemType: "lab"
+//       bundleId: "04a4fce5-9693-462f-9569-fc32f8d41c1b",
+//       itemId: "b35766c3-53da-4aae-bdba-57517499c794",
+//       itemType: "medicine"
 //     });
 
 //     // Optional: Insert multiple dummy data to test connection
@@ -86,7 +71,7 @@ BundleItems.belongsTo(Lab, { foreignKey: "labId" });
 //     //     roleId: "18557561-b6c0-4030-a620-01337fa4f17e",
 //     //     password: "11223344"}
 //     // ]);
-//     console.log("✅ Dummy user data inserted successfully.");
+//     console.log("✅ Dummy bundle item data inserted successfully.");
 //   } catch (error) {
 //     console.log("❌ Error syncing database:", error);
 //   }

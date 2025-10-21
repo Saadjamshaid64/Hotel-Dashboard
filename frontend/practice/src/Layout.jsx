@@ -1,14 +1,12 @@
-import {Outlet} from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import Sidebar from "./components/sidebar/Sidebar.jsx";
-function Layout()
-{
-return (
+function Layout() {
+  return (
     <>
-    <Sidebar/>
-    <Outlet/>
+      <Sidebar />
+      <Outlet/>
     </>
-)
+  );
 }
-
 
 export default Layout;

@@ -114,6 +114,7 @@
 import { user as User } from "../models/userModels.js";
 import { Role } from "../models/roleModels.js";
 import {Provider} from "../models/providerModels.js"
+import { Patient } from "../models/Patient_Models.js";
 
 // create user
 export const createUser = async (data) => {
@@ -136,6 +137,23 @@ export const createUser = async (data) => {
         statelicenses: [],
       })
       console.log("✅ Provider record auto-created for user:", newUser.email);
+    }
+
+    if(role && role?.rolename.toLowerCase()=== "patient")
+    {
+      await Patient.create({
+        First_Name: firstname,
+        Last_Name: lastname,
+        Email: email,
+        UserId: newUser.id,
+        Phone: 344,
+        DOB: "2025-12-29",
+        Gender: "Male",
+        Street_Address: "sss",
+        City: "Sialkot",
+        State: "Albama"
+      })
+      console.log("✅ Patient record auto-created for user:", newUser.email);
     }
 
     return newUser;

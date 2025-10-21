@@ -454,7 +454,6 @@ function ProviderManager() {
         open={isOpen}
         onClose={() => {
           setIsOpen(false);
-          resetForm();
         }}
         className="relative z-50"
       >
@@ -855,7 +854,7 @@ function ProviderManager() {
                 </button>
                 <button
                   type="submit"
-                  className={`px-4 py-2 rounded-md bg-blue-600 text-white cursor-pointer${
+                  className={`px-4 py-2 rounded-md bg-blue-600 text-white cursor-pointer ${
                     loading
                         ? "bg-blue-400 text-white"
                         : "bg-blue-600 text-white"

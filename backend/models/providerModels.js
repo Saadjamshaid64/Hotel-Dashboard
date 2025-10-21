@@ -66,7 +66,7 @@ export const Provider = sequelize.define(
 );
 
 // define relation of user
-user.hasOne(Provider, { foreignKey: "userId", onDelete: "CASCADE" });
+user.hasOne(Provider, { foreignKey: "userId", onDelete: "CASCADE"});
 Provider.belongsTo(user, { foreignKey: "userId"});
 
 // sunc + dummy data

@@ -469,7 +469,6 @@ function Roles() {
           </thead>
           <tbody>
             {roles && roles.length > 0 ? (
-              // roles.filter((user) => user  && user?.rolename)
               roles.map((user, index, array) => (
                 <tr key={index} className="border-t border-gray-300">
                   <td className="px-6 py-4">

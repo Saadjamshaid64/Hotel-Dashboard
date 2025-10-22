@@ -158,7 +158,13 @@ function Users() {
       {/* Tabs */}
       <div className="mt-1 inline-flex bg-gray-100 rounded-md shadow-sm p-1">
         <button
-          onClick={() => setActiveTab("management")}
+          onClick={() => {
+            setActiveTab("management");
+            settablaoding(true);
+            setTimeout(() => {
+              settablaoding(false);
+            }, 3000);
+          }}
           className={`px-4 py-2 text-sm rounded-md transition cursor-pointer ${
             activeTab === "management"
               ? "bg-white text-700 font-semibold shadow-sm"
@@ -168,7 +174,13 @@ function Users() {
           User Management
         </button>
         <button
-          onClick={() => setActiveTab("roles")}
+          onClick={() => {
+            setActiveTab("roles");
+            settablaoding(true);
+            setTimeout(() => {
+              settablaoding(false);
+            }, 3000);
+          }}
           className={`px-4 py-2 text-sm rounded-md transition cursor-pointer ${
             activeTab === "roles"
               ? "bg-white text-700 font-semibold shadow-sm"
@@ -213,10 +225,19 @@ function Users() {
       </div>
 
       {/* Tab content */}
-      {activeTab === "management" && (
-        <div>
-          {/* Title + Add User button */}
-          <div className="flex items-center justify-between mt-8">
+      {activeTab === "management" && 
+        (tabloading ? (
+          <div className="flex items-center justify-center h-64 gap-2">
+            {/* spinner */}
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="text-gray-700 font-medium">
+              Loading Users...
+            </span>
+          </div>
+        ) : (
+          <div>
+            {/* Title + Add User button */}
+            <div className="flex items-center justify-between mt-8">
             <h3 className="text-md font-semibold">System Users</h3>
             <button
               onClick={() => {
@@ -566,7 +587,7 @@ function Users() {
                       </td>
 
                       {/* buttons */}
-                      <td className="px- py-4">
+                      <td className="px-12 py-4">
                         <div className="flex items-center gap-2">
                           {/* <button className="text-sm text-gray-700 border border-gray-300 px-3 py-1 rounded-md hover:bg-blue-100 hover:text-blue-600 hover:border-blue-600 cursor-pointer">
                             change password
@@ -603,7 +624,7 @@ function Users() {
             </table>
           </div>
         </div>
-      )}
+        ))}
       {activeTab === "provider" &&
         (tabloading ? (
           <div className="flex items-center justify-center h-64 gap-2">
@@ -616,7 +637,18 @@ function Users() {
         ) : (
           <ProviderManager />
         ))}
-      {activeTab === "roles" && <Roles />}
+      {activeTab === "roles" &&
+        (tabloading ? (
+          <div className="flex items-center justify-center h-64 gap-2">
+            {/* spinner */}
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="text-gray-700 font-medium">
+              Loading Roles...
+            </span>
+          </div>
+        ) : (
+          <Roles />
+        ))}
       {activeTab === "services" &&
         (tabloading ? (
           <div className="flex items-center justify-center h-64 gap-2">

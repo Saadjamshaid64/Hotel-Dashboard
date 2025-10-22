@@ -156,7 +156,7 @@ export default function Schedule() {
   };
 
   // delete functionality
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
     if (!scheduleset?.id) {
       console.error("No schedule selected for delete");
       seterrors(["No schedule selected"]);

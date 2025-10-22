@@ -61,7 +61,9 @@ export const deleteScheduleService = async (id) => {
 // fetch medicine
 export const fetchScheduleService = async () => {
   try {
-    const result = await Schedule.findAll();
+    const result = await Schedule.findAll({
+      
+    });
     console.log("Schedule fetched Successfully in Service");
     return result;
   } catch (error) {

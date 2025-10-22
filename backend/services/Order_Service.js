@@ -1,11 +1,11 @@
 import { where } from "sequelize";
-import { Medicine } from "../models/medicineModels.js";
+import { Order } from "../models/Order_Models.js";
 
-// create medicine
-export const createMedicineService = async (data) => {
+// create order
+export const createOrderService = async (data) => {
   try {
-    const result = await Medicine.create(data);
-    console.log("User added successfully in Service");
+    const result = await Order.create(data);
+    console.log("Order added successfully in Service");
     return result;
   } catch (error) {
     console.log("Something went wrong in Service", error.message);
@@ -13,16 +13,16 @@ export const createMedicineService = async (data) => {
   }
 };
 
-// edit medicine
-export const editMedicineService = async (id, data) => {
+// edit order
+export const editOrderService = async (id, data) => {
   try {
-    const user = await Medicine.findByPk(id);
+    const user = await Order.findByPk(id);
     if (!user) {
-      console.log("User not found");
+      console.log("Order not found");
       return null;
     }
     const result = await user.update(data);
-    console.log("User updated in Service");
+    console.log("Order updated in Service");
     return result;
   } catch (error) {
     console.log("Something went wrong in Service", error.message);
@@ -30,15 +30,15 @@ export const editMedicineService = async (id, data) => {
   }
 };
 
-// delete medicine
-export const deleteMedicineService = async (id) => {
+// delete order
+export const deleteOrderService = async (id) => {
   try {
-    const deletedrow = await Medicine.destroy({ where: { id } });
+    const deletedrow = await Order.destroy({ where: { id } });
     if (deletedrow === 0) {
-      console.log("User not found");
+      console.log("Order not found");
       return null;
     }
-    console.log("User deleted successfully in Service");
+    console.log("Order deleted successfully in Service");
     return deletedrow;
   } catch (error) {
     console.log("Something went wrong in Service", error.message);
@@ -46,11 +46,11 @@ export const deleteMedicineService = async (id) => {
   }
 };
 
-// fetch medicine
-export const fetchMedicineService = async () => {
+// fetch order
+export const fetchOrderService = async () => {
   try {
-    const result = await Medicine.findAll()
-    console.log("User fetched Successfully in Service")
+    const result = await Order.findAll()
+    console.log("Order fetched Successfully in Service")
     return result
   } catch (error) {
   console.log("Something went wrong in Service", error.message);

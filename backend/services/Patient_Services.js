@@ -1,6 +1,8 @@
 import { Role } from "../models/roleModels.js";
 import { Patient } from "../models/Patient_Models.js";
 import { user } from "../models/userModels.js";
+import { Schedule } from "../models/Schedule_Models.js";
+import { Provider } from "../models/providerModels.js";
 
 // create patient service
 export const createPatientService = async (data) => {
@@ -94,12 +96,21 @@ export const deletePatientService = async (id) => {
 // fetch patient service
 export const fetchPatientService = async () => {
   try {
-    const result = await Patient.findAll();
-    // if(result?.data)
-    // {
+    const result = await Patient.findAll({
+      include: [
+        {
+          model: Schedule,
+          include: [
+            {
+              model: Provider,
+              attributes: ["id","providername"]
+            }
+          ]
+        }
+      ]
+    });
     console.log("Patient fetched successfully in service");
     return result;
-    // }
   } catch (error) {
     console.log("Patient not fetched successfully in service", error.message);
     throw new Error("Something went wrong in Service" || error.message);

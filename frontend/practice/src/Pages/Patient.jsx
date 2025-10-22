@@ -653,7 +653,12 @@ function Patient() {
                   </td>
 
                   {/* Provider */}
-                  <td className="px-6 py-4 text-sm text-gray-700">Dr Sam</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {user.Schedules && user.Schedules.length > 0
+                      ? user.Schedules.find((s) => s.Provider)?.Provider
+                          ?.providername || "No provider"
+                      : "No provider"}
+                  </td>
 
                   {/* Status */}
                   <td className="px-6 py-4">

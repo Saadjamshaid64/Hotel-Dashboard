@@ -7,6 +7,8 @@ import Layout from './Layout.jsx'
 import Users from './Pages/Users.jsx'
 import Patient from './Pages/Patient.jsx'
 import Schedule from './Pages/Schedule.jsx'
+import Pos from "./Pages/Pos.jsx"
+import Tasks from "./Pages/Tasks.jsx"
 
 
 const router = createBrowserRouter(
@@ -15,7 +17,9 @@ const router = createBrowserRouter(
       <Route path='' element={<Dashboard/>}/>
       <Route path='patient' element={<Patient/>}/>
       <Route path='user' element={<Users/>}/>
-      <Route path="schedule" element={<Schedule/>}/>
+      <Route path='schedule' element={<Schedule/>}/>
+      <Route path='tasks' element={<Tasks/>}/>
+      <Route path='pos' element={<Pos/>}/>
     </Route>
   )
 )

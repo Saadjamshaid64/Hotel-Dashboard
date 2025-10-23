@@ -6,8 +6,6 @@ import usePatient from "../Customhooks/usePatients";
 function Patient() {
   const [open, setisopen] = useState(false);
   const [errors, seterrors] = useState([]);
-  const [editindex, seteditindex] = useState(null);
-  const [editopen, seteditopen] = useState(false);
   const [patientdata, setpatientdata] = useState({
     First_Name: "",
     Last_Name: "",
@@ -18,15 +16,16 @@ function Patient() {
     Street_Address: "",
     City: "",
     State: "",
+    Zip_Code: "",
+    E_Contact_Name: "",
+    E_Contact_Phone: "",
+    Medical_History: "",
+    Allergies: "",
+    Current_Medications: "",
+    Interested_Treatments: "",
   });
 
-  const {
-    patients,
-    setpatients,
-    createPatientHook,
-    editPatientHook,
-    deletePatientHook,
-  } = usePatient();
+  const {patients, setpatients, createPatientHook, editPatientHook, deletePatientHook} = usePatient()
 
   const usStates = [
     "Alabama",
@@ -94,33 +93,43 @@ function Patient() {
 
   // submit functionality
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    // const newErrors = [];
+    e.preventDefault()
+    const newErrors = []
+    // validate each required field
+    if (!patientdata.First_Name) newErrors.push("First Name is required")
+    if (!patientdata.Last_Name) newErrors.push("Last Name is required")
+    if (!patientdata.Email) newErrors.push("Email is required")
+    // basic email pattern
+    else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(patientdata.Email))
+      newErrors.push("Email must be a valid email address")
+    if (!patientdata.Phone) newErrors.push("Phone is required")
+    if (!patientdata.DOB) newErrors.push("Date of birth is required")
+    if (!patientdata.Gender) newErrors.push("Gender is required")
+    if (!patientdata.Street_Address) newErrors.push("Street address is required")
+    if (!patientdata.City) newErrors.push("City is required")
+    if (!patientdata.State) newErrors.push("State is required")
+    if (!patientdata.Zip_Code) newErrors.push("ZIP code is required")
+    if (!patientdata.E_Contact_Name) newErrors.push("Emergency contact name is required")
+    if (!patientdata.E_Contact_Phone) newErrors.push("Emergency contact phone is required")
+    if (!patientdata.Medical_History) newErrors.push("Medical history is required")
+    if (!patientdata.Allergies) newErrors.push("Allergies field is required")
+    if (!patientdata.Current_Medications) newErrors.push("Current medications field is required")
+    if (!patientdata.Interested_Treatments) newErrors.push("Interested treatments field is required")
 
-    // if (!First_Name) newErrors.push("First Name is required");
-    // if (!Last_Name) newErrors.push("Last Name is required");
-    // if (!Email) newErrors.push("Email is required");
-    // if (!Phone) newErrors.push("Phone number is required");
-    // if (!DOB) newErrors.push("Date of Birth is required");
-    // if (!Gender) newErrors.push("Gender is required");
-    // if (!Street_Address) newErrors.push("Street Address is required");
-    // if (!City) newErrors.push("City is required");
-    // if (!State) newErrors.push("State is required");
-    // if (!Zip_Code) newErrors.push("Zip Code is required");
+    seterrors(newErrors)
+
+    if (newErrors.length > 0) return
 
     try {
-      const result = await createPatientHook(patientdata);
+      // call createPatientHook and handle result
+      const result = await createPatientHook(patientdata)
       if (result?.data) {
-        console.log("Patient added Successfully");
-        setisopen(false);
-        resetForm();
-        return result;
+        resetForm()
+        setisopen(false)
       }
-
-      console.log("Patient not created Successfully");
     } catch (error) {
-      console.error("Error creating Patient:", error);
-      seterrors([error.message || "Failed to create Patient"]);
+      // push server-side error message if available
+      seterrors([error?.message || 'An unexpected error occurred'])
     }
   };
 
@@ -136,49 +145,14 @@ function Patient() {
       Street_Address: "",
       City: "",
       State: "",
+      Zip_Code: "",
+      E_Contact_Name: "",
+      E_Contact_Phone: "",
+      Medical_History: "",
+      Allergies: "",
+      Current_Medications: "",
+      Interested_Treatments: "",
     });
-  };
-
-  // delete functionality
-  const handleDelete = async (id) => {
-    try {
-      const res = await deletePatientHook(id);
-      if (res?.data) {
-        setpatients((prev) => prev.filter((user) => user.id != id));
-        console.log("Patient deleted successfully");
-      }
-    } catch (error) {
-      console.log("Error occur", error);
-    }
-  };
-
-  // edit functionality
-  const handleEditClick = async (user, index) => {
-    try {
-      seteditindex(index);
-      seteditopen(true);
-      setpatientdata(user);
-    } catch (error) {
-      console.log("Error occur", error);
-      seterrors([error.message || "Failed to update user"]);
-    }
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const id = patients[editindex].id;
-      const res = await editPatientHook(id, patientdata);
-
-      if (res?.data) {
-        console.log("Patient edited successfully");
-        resetForm();
-        seteditopen(false);
-      }
-    } catch (error) {
-      console.log("Error updating user:", error);
-      seterrors([error.message || "Failed to update user"]);
-    }
   };
 
   return (
@@ -212,7 +186,7 @@ function Patient() {
         <div className="bg-white px-6 py-4 rounded-xl flex items-center justify-between border border-gray-200 flex-1">
           <div>
             <p className="text-sm font-medium text-gray-600">Total Patients</p>
-            <p className="text-lg font-bold">{patients.length}</p>
+            <p className="text-lg font-bold">0</p>
           </div>
           <div className="p-2 rounded-lg">
             <Users className="w-5 h-5 text-blue-600" />
@@ -222,7 +196,7 @@ function Patient() {
         <div className="bg-white px-6 py-4 rounded-xl flex items-center justify-between border border-gray-200 flex-1">
           <div>
             <p className="text-sm font-medium text-gray-600">Active Patients</p>
-            <p className="text-lg font-bold">{patients.length}</p>
+            <p className="text-lg font-bold">1</p>
           </div>
           <div className="p-2 bg-green-100 rounded-lg">
             {/* <Stethoscope className="w-5 h-5 text-green-600" /> */}
@@ -232,7 +206,7 @@ function Patient() {
         <div className="bg-white px-6 py-4 rounded-xl flex items-center justify-between border border-gray-200 flex-1">
           <div>
             <p className="text-sm font-medium text-gray-600">Pending Labs</p>
-            <p className="text-lg font-bold">0</p>
+            <p className="text-lg font-bold">2</p>
           </div>
           <div className="p-2 bg-purple-100 rounded-lg">
             {/* <Package className="w-5 h-5 text-purple-600" /> */}
@@ -266,8 +240,8 @@ function Patient() {
               Create a new patient record. If an email is provided, a user
               account will be created and a welcome email will be sent.
             </p>
-            {/* 
-            {errors.length > 0 && (
+
+            {/* {errors.length > 0 && (
               <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-md text-sm">
                 <ul className="list-disc list-inside">
                   {errors.map((err, i) => (
@@ -395,22 +369,111 @@ function Patient() {
                         ))}
                       </select>
                     </div>
+
+                    <div>
+                      <label className="text-sm">ZIP Code *</label>
+                      <input
+                        type="text"
+                        name="Zip_Code"
+                        value={patientdata.Zip_Code}
+                        onChange={handleChange}
+                        className="border w-full border-gray-400 text-sm pl-2 py-2 rounded-md"
+                      />
+                    </div>
                   </div>
                 </div>
 
+                <div className="border border-gray-300 py-6 px-4 mt-4 max-w-full rounded-lg">
+                  <h1 className="text-lg font-semibold">Emergency Contact</h1>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm">
+                        Emergency Contact Name *
+                      </label>
+                      <input
+                        type="text"
+                        name="E_Contact_Name"
+                        value={patientdata.E_Contact_Name}
+                        onChange={handleChange}
+                        className="border w-full border-gray-400 text-sm pl-2 py-2 rounded-md"
+                        placeholder="John Doe"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm">
+                        Emergency Contact Phone *
+                      </label>
+                      <input
+                        type="number"
+                        name="E_Contact_Phone"
+                        value={patientdata.E_Contact_Phone}
+                        onChange={handleChange}
+                        className="border w-full border-gray-400 text-sm pl-2 py-2 rounded-md"
+                        placeholder="(555) 987-6543"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border border-gray-300 py-6 px-4 mt-4 max-w-full rounded-lg">
+                  <h1 className="text-lg font-semibold">Medical Information</h1>
+                  <div>
+                    <label className="text-sm">Medical History *</label>
+                    <input
+                      type="text"
+                      name="Medical_History"
+                      value={patientdata.Medical_History}
+                      onChange={handleChange}
+                      className="border w-full border-gray-400 text-sm pl-2 py-5 rounded-md"
+                      placeholder="Previous surgeries, chronic conditions, e.t.c"
+                    />
+                  </div>
+                  <div className="mt-3">
+                    <label className="text-sm">Allergies *</label>
+                    <input
+                      type="text"
+                      name="Allergies"
+                      value={patientdata.Allergies}
+                      onChange={handleChange}
+                      className="border w-full border-gray-400 text-sm pl-2 py-5 rounded-md"
+                      placeholder="Drug allergies, food allergies, e.t.c"
+                    />
+                  </div>
+                  <div className="mt-3">
+                    <label className="text-sm">Current Medications *</label>
+                    <input
+                      type="text"
+                      name="Current_Medications"
+                      value={patientdata.Current_Medications}
+                      onChange={handleChange}
+                      className="border w-full border-gray-400 text-sm pl-2 py-5 rounded-md"
+                      placeholder="List current medications and dosage (or write 'None' if no medications)"
+                    />
+                  </div>
+                  <div className="mt-3">
+                    <label className="text-sm">Interested Treatments *</label>
+                    <input
+                      type="text"
+                      name="Interested_Treatments"
+                      value={patientdata.Interested_Treatments}
+                      onChange={handleChange}
+                      className="border w-full border-gray-400 text-sm pl-2 py-5 rounded-md"
+                      placeholder="List treatments the patient is interested in (e.g., Testosterone Therapy, Weight Management, etc.)"
+                    />
+                  </div>
+                </div>
                 <div className="mt-3 flex gap-2 justify-end">
                   <button
                     typeof="button"
-                    onClick={() => {
-                      resetForm();
-                      setisopen(false);
-                    }}
+                    onClick={() => {resetForm(); setisopen(false)}}
                     className="border border-gray-300 cursor-pointer px-3 py-2 rounded-md"
                   >
                     Cancel
                   </button>
                   <button
                     typeof="submit"
+                    onClick={() => setisopen(false)}
                     className="bg-blue-500 px-3 py-2 rounded-md text-white cursor-pointer"
                   >
                     Create Patient
@@ -421,283 +484,6 @@ function Patient() {
           </Dialog.Panel>
         </div>
       </Dialog>
-
-      {/* Edit Patient Model */}
-      <Dialog
-        open={editopen}
-        onClose={() => seteditopen(false)}
-        className="relative z-50"
-      >
-        <div className="fixed inset-0 bg-black/75" aria-hidden="true"></div>
-
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-4xl h-[680px] rounded-lg bg-white p-6 shadow-lg overflow-y-auto">
-            <Dialog.Title className="text-base font-semibold mb-2">
-              Update Patient
-            </Dialog.Title>
-            <p className="text-sm text-gray-500">
-              Create a new patient record. If an email is provided, a user
-              account will be created and a welcome email will be sent.
-            </p>
-            {/* 
-            {errors.length > 0 && (
-              <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-md text-sm">
-                <ul className="list-disc list-inside">
-                  {errors.map((err, i) => (
-                    <li key={i}>{err}</li>
-                  ))}
-                </ul>
-              </div>
-            )} */}
-
-            <form onSubmit={handleEditSubmit}>
-              <div>
-                <div className="border border-gray-300 py-6 px-4 mt-4 max-w-full rounded-lg">
-                  <h1 className="font-semibold text-lg">Basic Information</h1>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm">First Name *</label>
-                      <input
-                        type="text"
-                        name="First_Name"
-                        value={patientdata.First_Name}
-                        onChange={handleChange}
-                        className="border w-full border-gray-400 text-sm pl-2 py-2 rounded-md"
-                        autoFocus
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm">Last Name *</label>
-                      <input
-                        type="text"
-                        name="Last_Name"
-                        value={patientdata.Last_Name}
-                        onChange={handleChange}
-                        className="border w-full border-gray-400 text-sm pl-2 py-2 rounded-md"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm">Email *</label>
-                      <input
-                        type="email"
-                        name="Email"
-                        value={patientdata.Email}
-                        onChange={handleChange}
-                        className="border w-full border-gray-400 text-sm pl-2 py-2 rounded-md"
-                        placeholder="patient@example.com"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm">Phone *</label>
-                      <input
-                        type="number"
-                        name="Phone"
-                        value={patientdata.Phone}
-                        onChange={handleChange}
-                        className="border w-full border-gray-400 text-sm pl-2 py-2 rounded-md"
-                        placeholder="(555) 123-4567"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm">Date of Birth *</label>
-                      <input
-                        type="date"
-                        name="DOB"
-                        value={patientdata.DOB}
-                        onChange={handleChange}
-                        className="border w-full border-gray-400 text-sm pl-2 py-2 rounded-md"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm">Gender *</label>
-                      <select
-                        name="Gender"
-                        value={patientdata.Gender}
-                        onChange={handleChange}
-                        className="w-full border text-sm border-gray-300 pl-2 py-2 rounded-md"
-                      >
-                        <option value="" disabled>
-                          Select Gender
-                        </option>
-                        <option>Male</option>
-                        <option>Female</option>
-                        <option>Other</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div className="border border-gray-300 py-6 px-4 mt-4 max-w-full rounded-lg">
-                  <h1 className="text-lg font-semibold">Address Information</h1>
-                  <div>
-                    <label className="text-sm">Street Address *</label>
-                    <input
-                      type="text"
-                      name="Street_Address"
-                      value={patientdata.Street_Address}
-                      onChange={handleChange}
-                      className="border w-full border-gray-400 text-sm pl-2 py-2 rounded-md"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-sm">City *</label>
-                      <input
-                        type="text"
-                        name="City"
-                        value={patientdata.City}
-                        onChange={handleChange}
-                        className="border w-full border-gray-400 text-sm pl-2 py-2 rounded-md"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm">State *</label>
-                      <select
-                        name="State"
-                        value={patientdata.State}
-                        onChange={handleChange}
-                        className="w-full border text-sm border-gray-300 pl-2 py-2 rounded-md"
-                      >
-                        <option value="" disabled>
-                          Select State
-                        </option>
-                        {usStates.map((user, index) => (
-                          <option key={index}>{user}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 flex gap-2 justify-end">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      resetForm();
-                      seteditopen(false);
-                    }}
-                    className="border border-gray-300 cursor-pointer px-3 py-2 rounded-md"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    typeof="submit"
-                    className="bg-blue-500 px-3 py-2 rounded-md text-white cursor-pointer"
-                  >
-                    Update Patient
-                  </button>
-                </div>
-              </div>
-            </form>
-          </Dialog.Panel>
-        </div>
-      </Dialog>
-
-      {/* Patient Table */}
-      <div className="mt-6">
-        <table className="w-full bg-white border border-gray-200 rounded-lg">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Patient
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Contact
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Provider
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Actions
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {patients.length > 0 ? (
-              patients.map((user, index) => (
-                <tr
-                  key={index}
-                  className="border-t hover:bg-gray-50 transition"
-                >
-                  {/* Patient Info */}
-                  <td className="px-6 py-4 flex items-center gap-3">
-                    {/* Circle Avatar with Initials */}
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-semibold text-blue-700">
-                      {user.First_Name?.charAt(0)}
-                      {user.Last_Name?.charAt(0)}
-                    </div>
-
-                    {/* Patient Info (stacked vertically) */}
-                    <div className="flex flex-col">
-                      <p className="font-semibold text-gray-800">
-                        {user.First_Name} {user.Last_Name}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {user.Age ? `Age: ${user.Age}` : "Age unknown"}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {user.Gender || "Gender not specified"}
-                      </p>
-                    </div>
-                  </td>
-
-                  {/* Contact */}
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    <p>📞 {user.Phone || "No phone"}</p>
-                    <p>✉️ {user.Email || "No email"}</p>
-                  </td>
-
-                  {/* Provider */}
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    {user.Schedules && user.Schedules.length > 0
-                      ? user.Schedules.find((s) => s.Provider)?.Provider
-                          ?.providername || "No provider"
-                      : "No provider"}
-                  </td>
-
-                  {/* Status */}
-                  <td className="px-6 py-4">
-                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                      Active
-                    </span>
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button
-                        className="p-2 border rounded hover:bg-blue-200 cursor-pointer"
-                        // onClick={() => alert(`Edit ${user.First_Name}`)}
-                        onClick={() => handleEditClick(user, index)}
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        className="p-2 border rounded hover:bg-red-200 cursor-pointer"
-                        // onClick={() => alert(`Delete ${user.First_Name}`)}
-                        onClick={() => handleDelete(user.id)}
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} className="text-center py-6 text-gray-500">
-                  No patients found!
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }
